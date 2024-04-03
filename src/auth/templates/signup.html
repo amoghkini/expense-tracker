@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Signup{% endblock %}
+
+{% block additional_css %}
+{% endblock %}
+
+{% block navbar %}
+    {% include 'non_authenticated_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="wrapper vh-75">
+    <div class="row align-items-center h-75">
+        <form class="needs-validation col-lg-6 col-md-8 col-10 mx-auto" action="{{url_for('auth.signup_api')}}" method="POST" novalidate>
+            <div class="mx-auto text-center my-4">
+                <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="{{url_for('core.index_api')}}">
+                    <svg version="1.1" id="logo" class="navbar-brand-img brand-md" xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 120 120"
+                        xml:space="preserve">
+                        <g>
+                            <polygon class="st0" points="78,105 15,105 24,87 87,87 	" />
+                            <polygon class="st0" points="96,69 33,69 42,51 105,51 	" />
+                            <polygon class="st0" points="78,33 15,33 24,15 87,15 	" />
+                        </g>
+                    </svg>
+                </a>
+                <h2 class="my-3">Register</h2>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" value="{{form_data['email']}}" class="form-control form-control-lg" required=""
+                    autofocus="">
+                <div class="invalid-feedback"> Please use a valid email </div>
+                {% if errors and 'email' in errors %}
+                    <div class="invalid-feedback-backend-error"> {{errors['email']}} </div>
+                {% endif %}
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="firstname">Firstname</label>
+                    <input type="text" id="firstname" name="first_name" value="{{form_data['first_name']}}" class="form-control form-control-lg" required="" autofocus="">
+                    <div class="invalid-feedback"> Please enter first name </div>
+                    {% if errors and 'first_name' in errors %}
+                        <div class="invalid-feedback-backend-error"> {{errors['first_name']}} </div>
+                    {% endif %}
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="lastname">Lastname</label>
+                    <input type="text" id="lastname" name="last_name" value="{{form_data['last_name']}}" class="form-control form-control-lg" required="" autofocus="">
+                    <div class="invalid-feedback"> Please enter last name </div>
+                    {% if errors and 'last_name' in errors %}
+                        <div class="invalid-feedback-backend-error"> {{errors['last_name']}} </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="mobileNo">Mobile</label>
+                    <input id="mobileNo" name="mobile_no" value="{{form_data['mobile_no']}}" class="form-control form-control-lg input-phone" id="custom-phone" maxlength="10" required
+                        autofocus="">
+                    <div class="invalid-feedback"> Please enter correct mobile number </div>
+                    {% if errors and 'mobile_no' in errors %}
+                        <div class="invalid-feedback-backend-error"> {{errors['mobile_no']}} </div>
+                    {% endif %}
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="dateOfBirth">Date of Birth</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control drgpicker" id="dateOfBirth" name="date_of_birth"  value="{{form_data['date_of_birth']}}" 
+                            aria-describedby="button-addon2">
+                        <div class="input-group-append">
+                            <div class="input-group-text" id="button-addon-date"><span class="fe fe-calendar fe-16 mx-2"></span></div>
+                        </div>
+                    </div>
+                    <div class="invalid-feedback"> Please enter valid birth date</div>
+                    {% if errors and 'date_of_birth' in errors %}
+                        <div class="invalid-feedback-backend-error"> {{errors['date_of_birth']}} </div>
+                    {% endif %}
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="password">New Password</label>
+                        <input type="password" id="password" name="password" value="{{form_data['password']}}" class="form-control form-control-lg" required="" autofocus="">
+                        <div class="invalid-feedback" id="password-validation-message"> Please enter password </div>
+                        {% if errors and 'password' in errors %}
+                            <div class="invalid-feedback-backend-error" > {{errors['password']}} </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirm_password" value="{{form_data['confirm_password']}}" class="form-control form-control-lg" required="" autofocus="">
+                        <div class="invalid-feedback"> Please enter confirm password </div>
+                        {% if errors and 'confirm_password' in errors %}
+                            <div class="invalid-feedback-backend-error"> {{errors['confirm_password']}} </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-2">Password requirements</p>
+                    <p class="small text-muted mb-2"> To create a new password, you have to meet all of the
+                        following requirements: </p>
+                    <ul class="small text-muted pl-4 mb-0">
+                        <li> Minimum 8 character </li>
+                        <li>At least one special character</li>
+                        <li>At least one number</li>
+                        <li>Can't be the same as a previous password </li>
+                    </ul>
+                </div>
+            </div>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+
+{% block additional_js %}
+{% endblock %}
