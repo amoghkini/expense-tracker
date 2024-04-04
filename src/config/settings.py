@@ -19,11 +19,13 @@ class BaseConfig(object):
     URL_MODULES = [
         'core.urls.routes',
         'auth.urls.routes',
+        'dashboard.urls.routes',
     ]
     
     BLUEPRINTS = [
         'core.core_blueprint',
-        'auth.auth'
+        'auth.auth',
+        'dashboard.dashboard'
     ]
     
     EXTENSIONS = [
