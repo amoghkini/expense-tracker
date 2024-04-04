@@ -5,7 +5,7 @@ from main.baseview import BaseView
 
 
 class AuthLoginView(BaseView):
-    _template ='login.html'
+    _template = 'login.html'
     
     def get(self):
         self._context["errors"] = {}
@@ -32,7 +32,7 @@ class AuthLoginView(BaseView):
     
     
 class AuthSignUpView(BaseView):
-    _template ='signup.html'
+    _template = 'signup.html'
     
     def get(self):
         self._context["errors"] = {}
