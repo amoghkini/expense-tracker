@@ -50,4 +50,4 @@ def _get_name():
         
 
 def inject_layout_type():
-    return {'layout_type': 'sidebar'}  # You can dynamically set the layout type here
+    return {'layout_type': 'navbar'}  # You can dynamically set the layout type here

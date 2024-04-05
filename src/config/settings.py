@@ -20,12 +20,14 @@ class BaseConfig(object):
         'core.urls.routes',
         'auth.urls.routes',
         'dashboard.urls.routes',
+        'income_expense_tracker.urls.routes'
     ]
     
     BLUEPRINTS = [
         'core.core_blueprint',
         'auth.auth',
-        'dashboard.dashboard'
+        'dashboard.dashboard',
+        'income_expense_tracker.income_expense_tracker',
     ]
     
     EXTENSIONS = [

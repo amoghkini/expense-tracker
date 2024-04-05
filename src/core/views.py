@@ -10,7 +10,6 @@ class IndexView(BaseView):
         if not g.user:
             return self.redirect('auth.login_api')
         else:
-            return self.redirect('auth.login_api')
             return self.redirect('dashboard.dashboard_api')
     
     
