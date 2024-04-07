@@ -1,1 +1,141 @@
-<h1>add expense</h1>
+{% extends "base.html" %}
+
+{% block title %}Add Expense{% endblock %}
+
+{% block additional_css %}
+{% endblock %}
+
+{% block content %}
+
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <center>
+                <h2 class="page-title">Add New Expense</h2>
+                <p class="text-muted">Provide all the necessary details for single expense</p>
+            </center>
+            <div class="row">
+                <div class="col-md-6 mx-auto">
+                    <div class="card my-4">
+                        <div class="card-body">
+                            <form class="needs-validation" action="{{url_for('income_expense_tracker.add_expense_api')}}" method="POST" novalidate>
+                                <div class="form-group mb-3">
+                                    <label for="expenseTitle">Title</label>
+                                    <input type="text" id="expenseTitle" name="title" class="form-control"
+                                        placeholder="Enter your expense title" required>
+                                    <div class="valid-feedback"> Looks good! </div>
+                                    <div class="invalid-feedback"> Bad title! </div>
+                                    {% if errors and 'title' in errors %}
+                                        <div class="invalid-feedback-backend-error"> {{errors['title']}} </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="amount">Amount</label>
+                                        <input class="form-control" id="amount" type="number" name="amount" step="0.01" required>
+                                        <div class="invalid-feedback"> Please enter a valid amount </div>
+                                        {% if errors and 'amount' in errors %}
+                                            <div class="invalid-feedback-backend-error"> {{errors['amount']}} </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="category">Category</label>
+                                        <select class="form-control select2" id="category" name="category" required>
+                                            <option value="">Select state</option>
+                                            <optgroup label="Mountain Time Zone">
+                                                <option value="AZ">Arizona</option>
+                                                <option value="CO">Colorado</option>
+                                                <option value="ID">Idaho</option>
+                                                <option value="MT">Montana</option>
+                                                <option value="NE">Nebraska</option>
+                                                <option value="NM">New Mexico</option>
+                                                <option value="ND">North Dakota</option>
+                                                <option value="UT">Utah</option>
+                                                <option value="WY">Wyoming</option>
+                                            </optgroup>
+                                            <optgroup label="Central Time Zone">
+                                                <option value="AL">Alabama</option>
+                                                <option value="AR">Arkansas</option>
+                                                <option value="IL">Illinois</option>
+                                                <option value="IA">Iowa</option>
+                                                <option value="KS">Kansas</option>
+                                                <option value="KY">Kentucky</option>
+                                                <option value="LA">Louisiana</option>
+                                                <option value="MN">Minnesota</option>
+                                                <option value="MS">Mississippi</option>
+                                                <option value="MO">Missouri</option>
+                                                <option value="OK">Oklahoma</option>
+                                                <option value="SD">South Dakota</option>
+                                                <option value="TX">Texas</option>
+                                                <option value="TN">Tennessee</option>
+                                                <option value="WI">Wisconsin</option>
+                                            </optgroup>
+                                        </select>
+                                        <div class="invalid-feedback"> Please select a valid category. </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="modeOfPayment">Mode of payment</label>
+                                        <select class="custom-select" id="modeOfPayment" name="mode_of_payment" required>
+                                            <option selected disabled value="">Select</option>
+                                            {% for mode_of_payment in mode_of_payment_options %}
+                                               <option value="{{ mode_of_payment}}">{{ mode_of_payment}}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="invalid-feedback"> Please select a valid mode of payment. </div>
+                                    </div>
+                                </div>
+                                <div class="form-row mb-3">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="date">Date</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control drgpicker" id="date" name="date" aria-describedby="button-addon2">
+                                            <div class="input-group-append">
+                                                <div class="input-group-text" id="button-addon-date"><span
+                                                        class="fe fe-calendar fe-16 mx-2"></span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="time">Time</label>
+                                        <input class="form-control" id="time" type="time" name="time" required>
+                                        <div class="invalid-feedback"> Please enter valid time! </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="reasonOfPayment">Reason of payment</label>
+                                        <select class="custom-select" id="reasonOfPayment" name="reason_of_expense" required>
+                                            <option selected disabled value="">Select</option>
+                                            {% for reason_of_expense in reason_of_expense_options %}
+                                            <option value="{{ reason_of_expense}}">{{ reason_of_expense}}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="invalid-feedback"> Please select a valid type of payment. </div>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="description">Description</label>
+                                    <textarea class="form-control" id="description" name="description"
+                                        placeholder="Take a note here" rows="3"></textarea>
+                                    <div class="invalid-feedback"> Please enter an expense description. </div>
+                                    {% if errors and 'description' in errors %}
+                                        <div class="invalid-feedback-backend-error"> {{errors['description']}} </div>
+                                    {% endif %}
+                                </div>
+                                <div class="custom-control custom-checkbox mb-3">
+                                    <input type="checkbox" class="custom-control-input" id="addAnotherExpense" name="add_another">
+                                    <label class="custom-control-label" for="addAnotherExpense">Add another</label>
+                                </div>
+                                <button class="btn btn-primary btn-block" type="submit">Add Expense</button>
+                            </form>
+                        </div> <!-- /.card-body -->
+                    </div> <!-- /.card -->
+                </div> <!-- /.col -->
+            </div> <!-- end section -->
+        </div> <!-- /.col-12 col-lg-10 col-xl-10 -->
+    </div> <!-- .row -->
+</div> <!-- .container-fluid -->
+
+{% endblock content %}
+
+{% block additional_js %}
+{% endblock %}

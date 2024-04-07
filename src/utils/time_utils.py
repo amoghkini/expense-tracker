@@ -4,7 +4,9 @@ from typing import Optional
 
 class TimeUtils:
     DATE_FORMAT: str = "%Y-%m-%d"
+    DATE_FORMAT_US: str = "%m/%d/%Y"
     TIME_FORMAT: str = "%H:%M:%S"
+    TIME_FORMAT_WITHOUT_SEC: str = "%H:%M"
     DATE_TIME_FORMAT: str = "%Y-%m-%d-%H-%M-%S"
     
     @staticmethod
@@ -127,3 +129,25 @@ class TimeUtils:
         - str: The formatted date-time string.
         """
         return datetime_obj.strftime(TimeUtils.DATE_TIME_FORMAT)
+    
+    @staticmethod
+    def combine_date_time(
+        date: str,
+        date_format: str,
+        time: str,
+        time_format: str
+    ) -> datetime:
+        if not date:
+            raise ValueError("Please provide a valid date value")
+        
+        if not time:
+            raise ValueError("Please provide a valid time value")
+        
+        date_temp = datetime.strptime(date, date_format)
+        time_temp = datetime.strptime(time, time_format).time()
+        
+        # Merge date and time into a single datetime object
+        datetime_obj = datetime.combine(date_temp, time_temp)
+        return datetime_obj
+    
+    

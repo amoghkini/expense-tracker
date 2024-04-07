@@ -12,7 +12,6 @@ from main.extensions import db
 # http://flask-sqlalchemy.pocoo.org/2.2/models/#many-to-many-relationships
 
 
-# a bit of hackery to make type-hinting in PyCharm work correctly
 from sqlalchemy.orm.relationships import RelationshipProperty
 class __relationship_type_hinter__(RelationshipProperty):
     # implement __call__ to silence the silly "not callable" warning
