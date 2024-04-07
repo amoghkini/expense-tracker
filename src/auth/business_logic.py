@@ -3,7 +3,8 @@ from pydantic import ValidationError
 from auth.exceptions import IncorrectCredentialsException, UserNotFoundException
 from auth.models import User
 from auth.data_validator import UserSignUpValidator
-from auth.utils import Response, Utils
+from auth.utils import Utils
+from utils.response_handler import Response
 from utils.utils import Utils as CommonUtils
 
 
