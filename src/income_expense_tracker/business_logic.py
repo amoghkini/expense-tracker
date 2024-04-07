@@ -40,7 +40,7 @@ class BusinessLogic:
         transction_type: Union[str, TransactionType]
     ) -> Transactions:
         # Check if transaction_type is valid
-        if not transction_type in TransactionType.allowed_transaction_types():
+        if not transction_type in TransactionType.allowed_values():
             raise InvalidTransactionTypeException("Invalid transaction type provided")
         
         new_transaction: Transactions = Transactions()

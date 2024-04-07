@@ -21,13 +21,13 @@ class NewExpenseValidator(BaseModel):
         
     @validator('mode_of_payment')
     def mode_of_payment_validator(cls, mode_of_payment):
-        if mode_of_payment not in ModeOfPayment.allowed_mode_of_payment_types():
+        if mode_of_payment not in ModeOfPayment.allowed_values():
             raise ValueError('Please provide valid mode of payment')
         return mode_of_payment
         
     @validator('reason_of_expense')
     def reason_of_expense_validator(cls, reason_of_expense):
-        if reason_of_expense not in ReasonOfExpense.allowed_reason_of_expense_types():
+        if reason_of_expense not in ReasonOfExpense.allowed_values():
             raise ValueError('Please provide valid reason of expense')
         return reason_of_expense
 

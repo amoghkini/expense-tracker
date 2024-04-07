@@ -14,6 +14,10 @@ class Utils:
     @staticmethod
     def title_case(string):
         return camel_to_snake_case(string).replace('_', ' ').title()
+    
+    @staticmethod
+    def title_case_to_space_separated(string: str) -> str:
+        return "".join([char if char.islower() else f" {char}" for char in string])[1:]
 
     @staticmethod
     def pluralize(name):
