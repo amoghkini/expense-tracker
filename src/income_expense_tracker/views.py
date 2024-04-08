@@ -20,6 +20,7 @@ class TrackerAddExpense(BaseView):
     
     def  get(self):
         self._context["errors"] = {}
+        self._context["form_data"] = request.form
         self._context['mode_of_payment_options'] = ModeOfPayment.allowed_values()
         self._context['reason_of_expense_options'] = ReasonOfExpense.allowed_values()
         self._context['categories_dict'] = Utils.get_categories()
@@ -30,7 +31,7 @@ class TrackerAddExpense(BaseView):
         self._context['mode_of_payment_options'] = ModeOfPayment.allowed_values()
         self._context['reason_of_expense_options'] = ReasonOfExpense.allowed_values()
         self._context['categories_dict'] = Utils.get_categories()
-        import pdb;pdb.set_trace()
+
         form_data: dict = request.form.to_dict()
         response_handler: Response = BusinessLogic.add_new_expense(form_data)
         
