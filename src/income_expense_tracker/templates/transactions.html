@@ -46,12 +46,26 @@
                                                 </div>
                                             </td>
                                             <td>{{ loop.index }}</td>
-                                            <td>{{ transaction['title'] }}</td>
+                                            <td>{{ transaction['title'] |title }}</td>
                                             <td>{{ transaction['amount'] }}</td>
-                                            <td>{{ transaction['type_of_transaction'] }}</td>
-                                            <td>{{ transaction['mode_of_payment'] }}</td>
+                                            <td>
+                                                {% if transaction['type_of_transaction'] == 'credit' %}
+                                                    <span class="text-success">{{ transaction['type_of_transaction'] |title }}</span>
+                                                {% else %}
+                                                    <span class="text-danger">{{ transaction['type_of_transaction'] |title }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ transaction['mode_of_payment'] |title }}</td>
                                             <td>{{ transaction['date'] }}</td>
-                                            <td>{{ transaction['reason_of_expense'] }}</td>
+                                            <td>
+                                                {% if transaction['reason_of_expense'] == 'need' or transaction['reason_of_expense'] == 'investment' %}
+                                                    <span class="badge badge-pill badge-success">{{ transaction['reason_of_expense'] |title }}</span>
+                                                {% elif transaction['reason_of_expense'] == 'want' %}
+                                                    <span class="badge badge-pill badge-warning">{{ transaction['reason_of_expense'] |title }}</span>
+                                                {% else %}
+                                                    <span class="badge badge-pill badge-danger">{{ transaction['reason_of_expense'] |title }}</span>
+                                                {% endif %}
+                                            </td>
                                             <td>{{ transaction['hidden_expense'] }}</td>
                                             <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button"
                                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
