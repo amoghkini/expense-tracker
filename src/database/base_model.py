@@ -1,4 +1,5 @@
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy import inspect
 
 from main.extensions import db
 from utils.utils import Utils
@@ -134,6 +135,22 @@ class BaseModel(db.Model):
     def rollback(self):
         db.session.rollback()
         
+    def to_dict(self, columns=None):
+        data = {}
+        mapper = inspect(self)
+
+        if columns is None:  # Return all columns if no argument provided
+            for column in mapper.mapper.column_attrs:
+                data[column.key] = getattr(self, column.key)
+        else:  # Include only specified columns
+            for column in columns:
+                if hasattr(self, column):  # Check if column exists
+                    data[column] = getattr(self, column)
+                else:
+                    print(f"Warning: Column '{column}' not found in {self.__class__.__name__} model.")
+
+        return data
+    
     def __repr__(self):
         properties = [f'{prop}={getattr(self, prop)!r}'
                       for prop in self.__repr_props__ if hasattr(self, prop)]
