@@ -33,7 +33,19 @@ class BusinessLogic:
             response.message = f"An internal error occurred"
             response.success = False
         return response
-            
+    
+    @staticmethod
+    def get_all_transactions() -> Response:
+        response = Response()
+        try:
+            transactions = Transactions.all()
+            response.data = [transaction.to_dict() for transaction in transactions]
+        except Exception as e:
+            print(f"An exception occured while adding new expense {str(e)}")
+            response.message = f"An internal error occurred"
+            response.success = False
+        return response
+    
     @staticmethod
     def get_new_transaction_model(
         form_data: dict,

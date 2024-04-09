@@ -7,6 +7,9 @@ from database import (
     Model,
     String
 )
+from utils.time_utils import TimeUtils
+
+
 class Transactions(Model):
     title = Column(String(500), nullable=False)
     amount = Column(BigInteger, nullable=False)
@@ -17,3 +20,9 @@ class Transactions(Model):
     hidden_expense = Column(Integer, nullable=True)
     reason_of_expense = Column(String(50), nullable=False)
     description = Column(String, nullable=True)
+    
+    def to_dict(self, columns=None):
+        data = super().to_dict(columns)
+        if 'date' in data and data.get('date') is not None:
+            data['date'] = TimeUtils.get_datetime_from_epoch(data.get('date',0), TimeUtils.DATE_TIME_FORMAT_UI)
+        return data
