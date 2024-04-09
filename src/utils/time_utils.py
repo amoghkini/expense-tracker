@@ -8,6 +8,7 @@ class TimeUtils:
     TIME_FORMAT: str = "%H:%M:%S"
     TIME_FORMAT_WITHOUT_SEC: str = "%H:%M"
     DATE_TIME_FORMAT: str = "%Y-%m-%d-%H-%M-%S"
+    DATE_TIME_FORMAT_UI: str  = "%Y/%m/%d %H:%M:%S"
     
     @staticmethod
     def get_epoch(
@@ -31,6 +32,15 @@ class TimeUtils:
         epoch_seconds = datetime.timestamp(datetime_obj) 
         return int(epoch_seconds) 
 
+    @staticmethod
+    def get_datetime_from_epoch(
+        epoch_time: int,
+        date_format: str = DATE_TIME_FORMAT
+    ) -> str:
+        if not epoch_time:
+            raise ValueError("Please provide valid epoch time")
+        return datetime.fromtimestamp(epoch_time).strftime(date_format)
+        
     @staticmethod
     def get_time_of_day(
         hours: int, 
