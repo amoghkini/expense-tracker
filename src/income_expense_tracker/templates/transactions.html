@@ -62,8 +62,10 @@
                                                     <span class="badge badge-pill badge-success">{{ transaction['reason_of_expense'] |title }}</span>
                                                 {% elif transaction['reason_of_expense'] == 'want' %}
                                                     <span class="badge badge-pill badge-warning">{{ transaction['reason_of_expense'] |title }}</span>
-                                                {% else %}
+                                                {% elif transaction['reason_of_expense'] == 'want' %}
                                                     <span class="badge badge-pill badge-danger">{{ transaction['reason_of_expense'] |title }}</span>
+                                                {% else %}
+                                                    <span class="badge badge-pill badge-danger"> Not Available </span>
                                                 {% endif %}
                                             </td>
                                             <td>{{ transaction['hidden_expense'] }}</td>
