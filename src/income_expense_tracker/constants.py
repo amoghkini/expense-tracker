@@ -42,7 +42,7 @@ class FoodAndDrinks(BaseEnum):
     PIZZA = "Pizza"
     BURGER = "Burger"
     TIFFIN = "Tiffin"
-    FOOD_AND_DRINKS_OTHER = 'Food & Drinks Other'
+    FOOD_AND_DRINKS_OTHER = "Food & Drinks Other"
     
 
 class Transport(BaseEnum):
@@ -67,4 +67,51 @@ class Transport(BaseEnum):
     TRANSPORT_OTHER = "Transport Other"
     
     
+class Shopping(BaseEnum):
+    CLOTHS = "Cloths"
+    SHOES = "Shoes"
+    Electronics = "Electronics"
+    VIDEO_GAMES = "Video Games"
+    BOOKS = "Books"
+    PLANTS = "Plants"
+    JEWELLERY = "Jewellery"
+    FURNITURE = "Furniture"
+    VEHICLE = "Vehicle"
+    COSMETICS = "Cosmetics"
+    Toys = "Toys"
+    STATIONARY = "Stationary"
+    GLASSES = "Glasses"
+    SHOPPING_OTHER = "Shopping Other"
     
+
+class Groceries(BaseEnum):
+    VEGETABLES = "Vegetables"
+    FRUITS = "Fruits"
+    MEAT = "Meat"
+    BAKERY = "Bakery"
+    DAIRY = "Dairy"
+    GROCERIES_OTHER = "Groceries Other"
+    
+class Entertainment(BaseEnum):
+    MOVIES = "Movies"
+    SHOWS = "Shows"
+    BOWLING = "Bowling"
+    ENTERTAINMENT_OTHER = "Entertainment Other"
+    
+    
+class Travel(BaseEnum):
+    ACTIVITIES = "Activities"
+    CAMPING = "Camping"
+    HOTEL = "Hotel"
+    HOSTEL = "Hostel"
+    AIRBNB = "Airbnb"
+    
+    
+class Medical(BaseEnum):
+    MEDICINES = "Medicines"
+    HOSPITAL = "Hospital"
+    CLINIC = "Clinic"
+    DENTIST = "Dentist"
+    LAB_TEST = "Lab Test"
+    HYGINE = "Hygine"
+    MEDICAL_OTHER = "Medical Other"
