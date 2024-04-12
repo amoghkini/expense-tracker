@@ -12,7 +12,7 @@ from utils.utils import Utils as CommmonUtils
 class Utils:
     
     @staticmethod
-    def get_categories() -> dict:
+    def get_expense_categories() -> dict:
         categories_dict: dict = {}
         
         for enum_class in (FoodAndDrinks, Transport, Shopping, Groceries, Entertainment, Travel, Medical):

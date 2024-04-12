@@ -16,6 +16,7 @@ class TransactionType(BaseEnum):
 class ModeOfPayment(BaseEnum):
     CASH = auto()
     UPI = auto()
+    TRANSFER = auto()
     
     
 class ReasonOfExpense(BaseEnum):
@@ -25,7 +26,15 @@ class ReasonOfExpense(BaseEnum):
     OTHER = auto()
     
 
-# Categoris enum values 
+# Income categories enum values
+class IncomeCategories(BaseEnum):
+    SALARY = 'Salary'
+    MARKET = "Market"
+    MUTUAL_FUNDS = "Mutual Funds"
+    INTEREST = "Interest"
+    
+
+# Expense categoris enum values 
 class FoodAndDrinks(BaseEnum):
     EATING_OUT = "Eating Out"
     TAKE_AWAY = "Take Away"

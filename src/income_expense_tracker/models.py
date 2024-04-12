@@ -18,7 +18,7 @@ class Transactions(Model):
     mode_of_payment = Column(String(50), nullable=False)
     date = Column(BigInteger, nullable=True)  
     hidden_expense = Column(Integer, nullable=True)
-    reason_of_expense = Column(String(50), nullable=False)
+    reason_of_expense = Column(String(50), nullable=True)
     description = Column(String, nullable=True)
     
     def to_dict(self, columns=None):

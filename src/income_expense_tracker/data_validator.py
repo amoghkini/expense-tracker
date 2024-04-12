@@ -36,3 +36,31 @@ class NewExpenseValidator(BaseModel):
     
     def __str__(self) -> str:
         return f"{self.title}: {self.amount}"
+    
+
+class NewIncomeValidator(BaseModel):
+    title: str
+    amount: int
+    category: str
+    mode_of_payment: str
+    date: str
+    time: str
+    description: str
+    
+    @validator('amount')
+    def amount_validator(cls, amount):
+        if amount <=0:
+            raise ValueError("Please provide amount greater than 0")
+        return amount
+        
+    @validator('mode_of_payment')
+    def mode_of_payment_validator(cls, mode_of_payment):
+        if mode_of_payment not in ModeOfPayment.allowed_values():
+            raise ValueError('Please provide valid mode of payment')
+        return mode_of_payment
+        
+    def to_dict(self):
+        return self.dict()
+    
+    def __str__(self) -> str:
+        return f"{self.title}: {self.amount}"
