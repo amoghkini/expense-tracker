@@ -3,7 +3,8 @@ from pydantic import ValidationError
 from auth.exceptions import IncorrectCredentialsException, UserNotFoundException
 from auth.models import User
 from auth.data_validator import UserSignUpValidator
-from auth.utils import Response, Utils
+from auth.utils import Utils
+from utils.response_handler import Response
 from utils.utils import Utils as CommonUtils
 
 
@@ -43,11 +44,11 @@ class BusinessLogic:
     def process_signup(
         form_data: dict
     ) -> Response:
-        
+
         response = Response()
         try:
             user = UserSignUpValidator(**form_data)
-            print(f"Registering new user: {user.to_dict()}")
+            print(f"Registering new user: {user.email}")
             new_user = BusinessLogic.get_new_user_model(form_data)
             new_user.save(commit=True)
             

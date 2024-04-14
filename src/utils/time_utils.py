@@ -4,8 +4,11 @@ from typing import Optional
 
 class TimeUtils:
     DATE_FORMAT: str = "%Y-%m-%d"
+    DATE_FORMAT_US: str = "%m/%d/%Y"
     TIME_FORMAT: str = "%H:%M:%S"
+    TIME_FORMAT_WITHOUT_SEC: str = "%H:%M"
     DATE_TIME_FORMAT: str = "%Y-%m-%d-%H-%M-%S"
+    DATE_TIME_FORMAT_UI: str  = "%Y/%m/%d %H:%M:%S"
     
     @staticmethod
     def get_epoch(
@@ -29,6 +32,15 @@ class TimeUtils:
         epoch_seconds = datetime.timestamp(datetime_obj) 
         return int(epoch_seconds) 
 
+    @staticmethod
+    def get_datetime_from_epoch(
+        epoch_time: int,
+        date_format: str = DATE_TIME_FORMAT
+    ) -> str:
+        if not epoch_time:
+            raise ValueError("Please provide valid epoch time")
+        return datetime.fromtimestamp(epoch_time).strftime(date_format)
+        
     @staticmethod
     def get_time_of_day(
         hours: int, 
@@ -127,3 +139,25 @@ class TimeUtils:
         - str: The formatted date-time string.
         """
         return datetime_obj.strftime(TimeUtils.DATE_TIME_FORMAT)
+    
+    @staticmethod
+    def combine_date_time(
+        date: str,
+        date_format: str,
+        time: str,
+        time_format: str
+    ) -> datetime:
+        if not date:
+            raise ValueError("Please provide a valid date value")
+        
+        if not time:
+            raise ValueError("Please provide a valid time value")
+        
+        date_temp = datetime.strptime(date, date_format)
+        time_temp = datetime.strptime(time, time_format).time()
+        
+        # Merge date and time into a single datetime object
+        datetime_obj = datetime.combine(date_temp, time_temp)
+        return datetime_obj
+    
+    

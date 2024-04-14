@@ -1,7 +1,8 @@
 from flask import request
 
-from auth.business_logic import BusinessLogic, Response
+from auth.business_logic import BusinessLogic
 from main.baseview import BaseView
+from utils.response_handler import Response
 
 
 class AuthLoginView(BaseView):
