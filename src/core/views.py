@@ -1,16 +1,16 @@
 from flask import  g
 
+from core.utils import Utils
 from main.baseview import BaseView
 
 
 class IndexView(BaseView):
     
     def get(self):
-        g.user = 'amogh'
-        if not g.user:
-            return self.redirect('auth.login_api')
-        else:
+        if Utils.get_current_user_from_session():
             return self.redirect('dashboard.dashboard_api')
+        else:
+            return self.redirect('auth.login_api')
     
     
 class AboutView(BaseView):
