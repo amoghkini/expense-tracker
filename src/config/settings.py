@@ -1,13 +1,13 @@
 import os
+from dotenv import load_dotenv
+
+
+dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
 
 
 class BaseConfig(object):
-    SYSTEM_MESSAGE_CATEGORIES = [
-            'success'           # 0 - GREEN
-            'info',             # 1 - BLUE
-            'warning',          # 2 - YELLOW
-            'danger',           # 3 - RED
-    ]
     
     SQLALCHEMY_ECHO = True
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
@@ -17,15 +17,15 @@ class BaseConfig(object):
     VERBOSE = True
     
     URL_MODULES = [
-        'core.urls.routes',
         'auth.urls.routes',
+        'core.urls.routes',
         'dashboard.urls.routes',
         'income_expense_tracker.urls.routes'
     ]
     
     BLUEPRINTS = [
-        'core.core_blueprint',
         'auth.auth',
+        'core.core_blueprint',
         'dashboard.dashboard',
         'income_expense_tracker.income_expense_tracker',
     ]
@@ -43,7 +43,7 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///temp.db"
-
+    
 
 class TestingConfig(BaseConfig):
     DEBUG = False
