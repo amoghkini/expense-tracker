@@ -101,6 +101,7 @@ class Groceries(BaseEnum):
     DAIRY = "Dairy"
     GROCERIES_OTHER = "Groceries Other"
     
+    
 class Entertainment(BaseEnum):
     MOVIES = "Movies"
     SHOWS = "Shows"
@@ -151,7 +152,7 @@ class Services(BaseEnum):
     COURIER = "Courier"
     PLUMBER = "Plumber"
     MECHANIC = "Mechanic"
-    PHOTOGRAPHER = "Phptographer"
+    PHOTOGRAPHER = "Photographer"
     DRIVER = "Driver"
     VEHICAL_WASH = "Vehical Wash"
     ELECTRICIAN = "Electrician"
