@@ -54,4 +54,16 @@ class TestingConfig(BaseConfig):
 class ProductionConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///temp.db"
-    
+
+# Dictionary to map environment names to configuration classes
+config_mapping = {
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'production': ProductionConfig
+}
+
+
+# Function to get the configuration class based on the environment
+def get_config():
+    flask_env = os.getenv('FLASK_ENV', 'development')  # Default to development if FLASK_ENV is not set
+    return config_mapping.get(flask_env.lower(), DevelopmentConfig)()

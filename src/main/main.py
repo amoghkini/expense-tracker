@@ -4,6 +4,7 @@ from flask import Flask
 from typing import Any, Tuple
 from werkzeug.utils import import_string, find_modules
 
+from config.settings import get_config, BaseConfig
 from main.app_life_cycle import AppLifeCycle
 from main.baseview import is_verbose
 from main.exceptions import (
@@ -30,11 +31,8 @@ class AppFactory(object):
     
     def __init__(
         self,
-        config,
-        bind_db_object: bool = True
     ) -> None:
-        self.app_config = config
-        self.bind_db_object = bind_db_object
+        self.app_config: BaseConfig = get_config()
         
     def get_app(
         self,
