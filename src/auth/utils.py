@@ -1,6 +1,7 @@
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from flask import session
 
 class Utils:
     
@@ -28,6 +29,11 @@ class Utils:
         :param plain_text_password: the plaintext password to compare against the hash.
         """
         return check_password_hash(hashed_password, plain_text_password)
+    
+    @staticmethod
+    def login_user(email: str) -> None:
+        session['logged_in'] = True
+        session['email'] = email
     
     @staticmethod
     def validate(data: str, regex: str) -> bool:
