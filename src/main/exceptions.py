@@ -1,6 +1,3 @@
-class NoBlueprintException(Exception):
-    pass
-
 class NoContextProcessorException(Exception):
     pass
 

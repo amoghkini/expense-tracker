@@ -8,7 +8,6 @@ from config.settings import get_config, BaseConfig
 from main.app_life_cycle import AppLifeCycle
 from main.baseview import is_verbose
 from main.exceptions import (
-    NoBlueprintException, 
     NoContextProcessorException, 
     NoExtensionException, 
     NoInstalledBlueprintsSettingException,
@@ -18,9 +17,9 @@ from main.exceptions import (
 
 
 class MyFlask(Flask):
-        jinja_options = dict(Flask.jinja_options)
-        jinja_options.setdefault('extensions',
-                []).append('jinja2_highlight.HighlightExtension')
+    jinja_options = dict(Flask.jinja_options)
+    jinja_options.setdefault('extensions',
+            []).append('jinja2_highlight.HighlightExtension')
         
 class AppFactory(object):
     """
