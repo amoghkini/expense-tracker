@@ -41,6 +41,13 @@ class BusinessLogic:
         return response
     
     @staticmethod
+    def process_logout():
+        try:
+            Utils.logout_user()
+        except Exception as e:
+            print(f"An exception occured while registering the user {str(e)}")
+            
+    @staticmethod
     def process_signup(
         form_data: dict
     ) -> Response:

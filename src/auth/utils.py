@@ -36,6 +36,11 @@ class Utils:
         session['email'] = email
     
     @staticmethod
+    def logout_user() -> None:
+        session.pop('logged_in',None)
+        session.pop('email',None)
+        
+    @staticmethod
     def validate(data: str, regex: str) -> bool:
         """Custom Validator"""
         return True if re.match(regex, data) else False
