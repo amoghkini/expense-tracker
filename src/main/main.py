@@ -47,7 +47,6 @@ class AppFactory(object):
 
         self.__set_path()
         self.__bind_extensions()
-        # self.__register_blueprints() # Not using anymore
         self.__register_routes()
         self.__load_models()
         self.__load_views()
@@ -114,34 +113,6 @@ class AppFactory(object):
                 extension.init_app(self.app)
             else:
                 extension(self.app)
-                    
-    def __register_blueprints(self) -> None:
-        """
-        Register blueprints with the Flask application.
-        
-        Raises:
-            NoBlueprintException: If no blueprints are found.
-        """
-        if self.app.config.get('VERBOSE', False):
-            print("Registering blueprints")
-            
-        self.blueprint: dict[str, Any] = {}
-        blueprints: list[str] = self.app.config.get('BLUEPRINTS', [])
-        if not blueprints:
-            if self.app.config.get('VERBOSE', False):
-                raise NoBlueprintException(f"No blueprint found")
-        
-        for blueprint_path in blueprints:
-            module, blueprint_name = self.__get_imported_stuff_by_path(blueprint_path)
-            
-            if not hasattr(module, blueprint_name):
-                raise NoBlueprintException(f"No {blueprint_name} blueprint found")
-            
-            self.app.register_blueprint(getattr(module, blueprint_name))
-            self.blueprint[blueprint_name] = getattr(module, blueprint_name)
-            
-            if self.app.config.get('VERBOSE', False):
-                print(f"Adding {blueprint_name} to blueprints")
                         
     def __register_routes(self) -> None:
         """
