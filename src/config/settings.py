@@ -68,7 +68,6 @@ config_mapping = {
 # Function to get the configuration class based on the environment
 def get_config():
     flask_env = os.getenv('FLASK_ENV', 'development')  # Default to development if FLASK_ENV is not set
-    print(flask_env)
     return config_mapping.get(flask_env.lower(), DevelopmentConfig)()
 
 
