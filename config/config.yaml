@@ -1,0 +1,4 @@
+# config.yml
+paths:
+  logs: ../logs
+  profile_pics: ../data/profile_pic
