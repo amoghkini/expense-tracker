@@ -1,10 +1,10 @@
-import jinja2_highlight
+import os
 import sys
 from flask import Flask
 from typing import Any, Tuple
 from werkzeug.utils import import_string, find_modules
 
-from config.settings import get_config, BaseConfig
+from config.settings import get_config, BaseConfig, get_server_helper_config_from_yaml
 from main.app_life_cycle import AppLifeCycle
 from main.baseview import is_verbose
 from main.exceptions import (
@@ -14,6 +14,7 @@ from main.exceptions import (
     NoRouteModuleException, 
     NoTemplateFilterException
 )
+from utils.logger import Logger
 
 
 class MyFlask(Flask):
@@ -42,6 +43,8 @@ class AppFactory(object):
         self.app.config.from_object(self.app_config)
         self.app.config['VERBOSE'] = is_verbose()
 
+        self.__server_bootup_operations()
+        
         self.__set_path()
         self.__bind_extensions()
         self.__register_routes()
@@ -60,6 +63,17 @@ class AppFactory(object):
         lifecycle_manager.register_teardown_appcontext()
         
         return self.app
+    
+    def __server_bootup_operations(self):
+        # Setup the logger
+        Logger.configure_logger('server')
+        
+        # Setup profile pic directory
+        server_config: dict = get_server_helper_config_from_yaml()
+        profile_pic_dir: str = server_config.get('paths','').get('profile_pics')
+        if not os.path.exists(profile_pic_dir):
+            os.makedirs(profile_pic_dir)
+            print("New directory created==>", profile_pic_dir)
     
     def __set_path(self):
         sys.path.append(self.app.config.get("ROOT_PATH", ''))
