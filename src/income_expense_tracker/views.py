@@ -73,7 +73,7 @@ class TrackerAddIncome(BaseView):
         self._context["errors"] = {}
         self._context['mode_of_payment_options'] = ModeOfPayment.allowed_values()
         self._context['categories_dict'] = IncomeCategories.allowed_values()
-        import pdb;pdb.set_trace()
+
         form_data: dict = request.form.to_dict()
         response_handler: Response = BusinessLogic.add_new_income(form_data)
         
