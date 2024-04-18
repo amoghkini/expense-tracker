@@ -31,7 +31,14 @@ class AuthLoginView(BaseView):
             self._context["form_data"] = request.form
             return self.render()
     
+
+class AuthLogOutView(BaseView):
     
+    def get(self):
+        BusinessLogic.process_logout()
+        return self.redirect('core.index_api')
+
+        
 class AuthSignUpView(BaseView):
     _template = 'signup.html'
     

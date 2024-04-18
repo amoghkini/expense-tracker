@@ -28,7 +28,7 @@ class BusinessLogic:
             else:
                 raise IncorrectCredentialsException
             # To Do: Update last login date 
-            
+            Utils.login_user(email)
             response.message = "User logged in successfully"
         except (IncorrectCredentialsException, UserNotFoundException) as e:
             print(f"The entered email id or password may be incorrect")
@@ -40,6 +40,13 @@ class BusinessLogic:
             response.success = False
         return response
     
+    @staticmethod
+    def process_logout():
+        try:
+            Utils.logout_user()
+        except Exception as e:
+            print(f"An exception occured while registering the user {str(e)}")
+            
     @staticmethod
     def process_signup(
         form_data: dict

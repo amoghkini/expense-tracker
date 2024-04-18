@@ -1,25 +1,26 @@
-import jinja2_highlight
+import os
 import sys
 from flask import Flask
 from typing import Any, Tuple
 from werkzeug.utils import import_string, find_modules
 
+from config.settings import get_config, BaseConfig, get_server_helper_config_from_yaml
 from main.app_life_cycle import AppLifeCycle
 from main.baseview import is_verbose
 from main.exceptions import (
-    NoBlueprintException, 
     NoContextProcessorException, 
     NoExtensionException, 
     NoInstalledBlueprintsSettingException,
     NoRouteModuleException, 
     NoTemplateFilterException
 )
+from utils.logger import Logger
 
 
 class MyFlask(Flask):
-        jinja_options = dict(Flask.jinja_options)
-        jinja_options.setdefault('extensions',
-                []).append('jinja2_highlight.HighlightExtension')
+    jinja_options = dict(Flask.jinja_options)
+    jinja_options.setdefault('extensions',
+            []).append('jinja2_highlight.HighlightExtension')
         
 class AppFactory(object):
     """
@@ -30,11 +31,8 @@ class AppFactory(object):
     
     def __init__(
         self,
-        config,
-        bind_db_object: bool = True
     ) -> None:
-        self.app_config = config
-        self.bind_db_object = bind_db_object
+        self.app_config: BaseConfig = get_config()
         
     def get_app(
         self,
@@ -45,9 +43,10 @@ class AppFactory(object):
         self.app.config.from_object(self.app_config)
         self.app.config['VERBOSE'] = is_verbose()
 
+        self.__server_bootup_operations()
+        
         self.__set_path()
         self.__bind_extensions()
-        # self.__register_blueprints() # Not using anymore
         self.__register_routes()
         self.__load_models()
         self.__load_views()
@@ -64,6 +63,17 @@ class AppFactory(object):
         lifecycle_manager.register_teardown_appcontext()
         
         return self.app
+    
+    def __server_bootup_operations(self):
+        # Setup the logger
+        Logger.configure_logger('server')
+        
+        # Setup profile pic directory
+        server_config: dict = get_server_helper_config_from_yaml()
+        profile_pic_dir: str = server_config.get('paths','').get('profile_pics')
+        if not os.path.exists(profile_pic_dir):
+            os.makedirs(profile_pic_dir)
+            print("New directory created==>", profile_pic_dir)
     
     def __set_path(self):
         sys.path.append(self.app.config.get("ROOT_PATH", ''))
@@ -114,34 +124,6 @@ class AppFactory(object):
                 extension.init_app(self.app)
             else:
                 extension(self.app)
-                    
-    def __register_blueprints(self) -> None:
-        """
-        Register blueprints with the Flask application.
-        
-        Raises:
-            NoBlueprintException: If no blueprints are found.
-        """
-        if self.app.config.get('VERBOSE', False):
-            print("Registering blueprints")
-            
-        self.blueprint: dict[str, Any] = {}
-        blueprints: list[str] = self.app.config.get('BLUEPRINTS', [])
-        if not blueprints:
-            if self.app.config.get('VERBOSE', False):
-                raise NoBlueprintException(f"No blueprint found")
-        
-        for blueprint_path in blueprints:
-            module, blueprint_name = self.__get_imported_stuff_by_path(blueprint_path)
-            
-            if not hasattr(module, blueprint_name):
-                raise NoBlueprintException(f"No {blueprint_name} blueprint found")
-            
-            self.app.register_blueprint(getattr(module, blueprint_name))
-            self.blueprint[blueprint_name] = getattr(module, blueprint_name)
-            
-            if self.app.config.get('VERBOSE', False):
-                print(f"Adding {blueprint_name} to blueprints")
                         
     def __register_routes(self) -> None:
         """

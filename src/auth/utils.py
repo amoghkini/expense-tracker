@@ -1,6 +1,7 @@
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from flask import session
 
 class Utils:
     
@@ -29,6 +30,16 @@ class Utils:
         """
         return check_password_hash(hashed_password, plain_text_password)
     
+    @staticmethod
+    def login_user(email: str) -> None:
+        session['logged_in'] = True
+        session['email'] = email
+    
+    @staticmethod
+    def logout_user() -> None:
+        session.pop('logged_in',None)
+        session.pop('email',None)
+        
     @staticmethod
     def validate(data: str, regex: str) -> bool:
         """Custom Validator"""
