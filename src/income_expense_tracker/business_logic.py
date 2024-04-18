@@ -58,7 +58,7 @@ class BusinessLogic:
     def get_all_transactions() -> Response:
         response = Response()
         try:
-            transactions = Transactions.all()
+            transactions = Transactions.query.order_by(Transactions.date.desc()).all()
             response.data = [transaction.to_dict() for transaction in transactions]
         except Exception as e:
             print(f"An exception occured while adding new expense {str(e)}")
