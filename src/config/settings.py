@@ -1,6 +1,6 @@
 import os
 import yaml
-from typing import Any
+from typing import Any, Optional
 from dotenv import load_dotenv
 
 
@@ -71,7 +71,7 @@ def get_config():
     return config_mapping.get(flask_env.lower(), DevelopmentConfig)()
 
 
-def get_server_helper_config_from_yaml() -> dict[str, Any]:
+def get_server_helper_config_from_yaml() -> Optional[dict[str, Any]]:
     config_file_path: str  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'config','config.yaml'))
     with open(config_file_path, 'r') as stream:
         try:

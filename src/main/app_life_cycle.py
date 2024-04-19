@@ -22,11 +22,11 @@ class AppLifeCycle:
         def before_request():
             session.permanent = True  # set session to use PERMANENT_SESSION_LIFETIME
             session.modified = True   # reset the session timer on every request
-            self.app.permanent_session_lifetime = timedelta(minutes=5)
+            self.app.permanent_session_lifetime = timedelta(minutes=60)
             
             g.user = None
-            if 'user' in session:
-                g.user = session['user']
+            if 'email' in session:
+                g.email =  session.get('email')
             
     def register_after_request(self):
         @self.app.after_request
