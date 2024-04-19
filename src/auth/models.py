@@ -7,6 +7,7 @@ from database import (
     String
 )
 from auth.utils import Utils
+from sqlalchemy.orm import relationship, backref
 
 
 class User(Model):
@@ -21,7 +22,8 @@ class User(Model):
     last_login_time = Column(DateTime(), nullable=True)  
     profile_pic = Column(String, nullable=True)
     date_of_birth = Column(DateTime(), nullable=True)
-    
+
+    transactions = relationship('income_expense_tracker.models.Transactions', backref='email', lazy=True)
     
     @classmethod
     def get_by_email(cls, email):

@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, g
 
 from main.baseview import BaseView
 from income_expense_tracker.business_logic import BusinessLogic
@@ -12,7 +12,8 @@ class TransactionsTracker(BaseView):
     
     def get(self):
         self._context["errors"] = {}
-        response_handler = BusinessLogic.get_all_transactions()
+
+        response_handler = BusinessLogic.get_all_transactions(g.email)
         
         if response_handler.success:
             if response_handler.message:
@@ -44,7 +45,7 @@ class TrackerAddExpense(BaseView):
         self._context['categories_dict'] = Utils.get_expense_categories()
 
         form_data: dict = request.form.to_dict()
-        response_handler: Response = BusinessLogic.add_new_expense(form_data)
+        response_handler: Response = BusinessLogic.add_new_expense(form_data, g.email)
         
         if response_handler.success:
             if response_handler.message:
@@ -75,7 +76,7 @@ class TrackerAddIncome(BaseView):
         self._context['categories_dict'] = IncomeCategories.allowed_values()
 
         form_data: dict = request.form.to_dict()
-        response_handler: Response = BusinessLogic.add_new_income(form_data)
+        response_handler: Response = BusinessLogic.add_new_income(form_data, g.user)
         
         if response_handler.success:
             if response_handler.message:
