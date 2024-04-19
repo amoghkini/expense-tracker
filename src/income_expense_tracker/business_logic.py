@@ -14,13 +14,14 @@ class BusinessLogic:
     
     @staticmethod
     def add_new_expense(
-        form_data: dict
+        form_data: dict,
+        email: str
     ) -> Response:
         response = Response()
         try:
             expense = NewExpenseValidator(**form_data)
             print(f"Adding new expense")
-            new_expense = BusinessLogic.get_new_transaction_model(form_data, TransactionType.DEBIT)
+            new_expense = BusinessLogic.get_new_transaction_model(form_data, email, TransactionType.DEBIT)
             new_expense.save(commit=True)
             response.message = "Expense added successfully"
         except ValidationError as e:
@@ -35,13 +36,14 @@ class BusinessLogic:
     
     @staticmethod
     def add_new_income(
-        form_data: dict
+        form_data: dict,
+        email: str
     ) -> Response:
         response = Response()
         try:
             income = NewIncomeValidator(**form_data)
             print(f"Adding new income")
-            new_expense = BusinessLogic.get_new_transaction_model(form_data, TransactionType.CREDIT)
+            new_expense = BusinessLogic.get_new_transaction_model(form_data, email, TransactionType.CREDIT)
             new_expense.save(commit=True)
             response.message = "Expense added successfully"
         except ValidationError as e:
@@ -55,10 +57,10 @@ class BusinessLogic:
         return response
     
     @staticmethod
-    def get_all_transactions() -> Response:
+    def get_all_transactions(email) -> Response:
         response = Response()
         try:
-            transactions = Transactions.query.order_by(Transactions.date.desc()).all()
+            transactions = Transactions.query.filter_by(user_email=email).order_by(Transactions.date.desc()).all()
             response.data = [transaction.to_dict() for transaction in transactions]
         except Exception as e:
             print(f"An exception occured while adding new expense {str(e)}")
@@ -69,6 +71,7 @@ class BusinessLogic:
     @staticmethod
     def get_new_transaction_model(
         form_data: dict,
+        email: str,
         transction_type: Union[str, TransactionType]
     ) -> Transactions:
         # Check if transaction_type is valid
@@ -85,5 +88,6 @@ class BusinessLogic:
         new_transaction.hidden_expense = 0
         new_transaction.reason_of_expense = form_data.get('reason_of_expense','')
         new_transaction.description = form_data.get('description')
+        new_transaction.user_email = email
         
         return new_transaction

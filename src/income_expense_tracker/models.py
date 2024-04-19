@@ -1,4 +1,4 @@
-
+from sqlalchemy import ForeignKey
 from database import (
     BigInteger,
     Column,
@@ -20,6 +20,8 @@ class Transactions(Model):
     hidden_expense = Column(Integer, nullable=True)
     reason_of_expense = Column(String(50), nullable=True)
     description = Column(String, nullable=True)
+    user_email = Column(Integer,ForeignKey('user.email'))
+    
     
     def to_dict(self, columns=None):
         data = super().to_dict(columns)
