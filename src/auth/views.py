@@ -2,6 +2,7 @@ from flask import request
 
 from auth.business_logic import BusinessLogic
 from main.baseview import BaseView
+from utils.flask_utils import login_required
 from utils.response_handler import Response
 
 
@@ -38,6 +39,7 @@ class AuthLoginView(BaseView):
 
 class AuthLogOutView(BaseView):
     
+    @login_required
     def get(self):
         BusinessLogic.process_logout()
         return self.redirect('core.index_api')

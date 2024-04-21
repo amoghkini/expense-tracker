@@ -5,11 +5,12 @@ from income_expense_tracker.business_logic import BusinessLogic
 from income_expense_tracker.constants import IncomeCategories, ModeOfPayment, ReasonOfExpense
 from income_expense_tracker.utils import Utils
 from utils.response_handler import Response
-
+from utils.flask_utils import login_required
 
 class TransactionsTracker(BaseView):
     _template: str = 'transactions.html'
     
+    @login_required
     def get(self):
         self._context["errors"] = {}
 
@@ -30,6 +31,7 @@ class TransactionsTracker(BaseView):
 class TrackerAddExpense(BaseView):
     _template: str = 'expense_add.html'
     
+    @login_required
     def  get(self):
         self._context["errors"] = {}
         self._context["form_data"] = request.form
@@ -38,6 +40,7 @@ class TrackerAddExpense(BaseView):
         self._context['categories_dict'] = Utils.get_expense_categories()
         return self.render()
     
+    @login_required
     def post(self):
         self._context["errors"] = {}
         self._context['mode_of_payment_options'] = ModeOfPayment.allowed_values()
@@ -63,6 +66,7 @@ class TrackerAddExpense(BaseView):
 class TrackerAddIncome(BaseView):
     _template: str = 'income_add.html'
     
+    @login_required
     def  get(self):
         self._context["errors"] = {}
         self._context["form_data"] = request.form
@@ -70,6 +74,7 @@ class TrackerAddIncome(BaseView):
         self._context['categories_dict'] = IncomeCategories.allowed_values()
         return self.render()
     
+    @login_required
     def post(self):
         self._context["errors"] = {}
         self._context['mode_of_payment_options'] = ModeOfPayment.allowed_values()
