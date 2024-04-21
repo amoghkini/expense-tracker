@@ -68,3 +68,12 @@ class AuthSignUpView(BaseView):
             self._context["errors"] = response_handler.errors
             self._context["form_data"] = request.form
             return self.render()
+
+class AuthProfileView(BaseView):
+    _template = 'profile.html'
+    
+    @login_required
+    def get(self):
+        self._context["errors"] = {}
+        self._context["form_data"] = request.form
+        return self.render()
