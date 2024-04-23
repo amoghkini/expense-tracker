@@ -87,3 +87,13 @@ class AuthProfileSettingsView(BaseView):
         self._context["errors"] = {}
         self._context["form_data"] = request.form
         return self.render()
+    
+
+class AuthProfileSecurity(BaseView):
+    _template = 'security.html'
+    
+    @login_required
+    def get(self):
+        self._context["errors"] = {}
+        self._context["form_data"] = request.form
+        return self.render()
