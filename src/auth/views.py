@@ -97,3 +97,13 @@ class AuthProfileSecurity(BaseView):
         self._context["errors"] = {}
         self._context["form_data"] = request.form
         return self.render()
+    
+
+class AuthProfileNotificationsSettings(BaseView):
+    _template = 'notifications_settings.html'
+    
+    @login_required
+    def get(self):
+        self._context["errors"] = {}
+        self._context["form_data"] = request.form
+        return self.render()

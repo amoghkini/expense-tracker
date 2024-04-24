@@ -16,7 +16,7 @@
                         aria-selected="true">Profile</a>
                     <a class="nav-link" id="home-tab" href="{{ url_for('auth.profile_security_api') }}" role="tab"
                         aria-controls="home" aria-selected="true">Security</a>
-                    <a class="nav-link" id="contact-tab" href="#contact" role="tab" aria-controls="home"
+                    <a class="nav-link" id="contact-tab" href="{{ url_for('auth.profile_notifications_settings_api') }}" role="tab" aria-controls="home"
                         aria-selected="true">Notifications</a>
                 </ul>
                 <form>
