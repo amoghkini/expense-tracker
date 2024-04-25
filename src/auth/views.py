@@ -107,3 +107,27 @@ class AuthProfileNotificationsSettings(BaseView):
         self._context["errors"] = {}
         self._context["form_data"] = request.form
         return self.render()
+    
+
+class AuthProfileResetPassword(BaseView):
+    _template = 'reset_password_request.html'
+    
+    def get(self):
+        self._context["errors"] = {}
+        self._context["form_data"] = request.form
+        return self.render()
+    
+    def post(self):
+        # Send password reset mail here
+        return self.redirect('auth.reset_password_confirmation_api')
+
+
+class AuthProfileResetPasswordConfirmation(BaseView):
+    _template = 'reset_password_request_confirmation.html'
+    
+    def get(self):
+        self._context["errors"] = {}
+        self._context["form_data"] = request.form
+        return self.render()
+    
+
