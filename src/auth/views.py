@@ -109,8 +109,8 @@ class AuthProfileNotificationsSettings(BaseView):
         return self.render()
     
 
-class AuthProfileResetPassword(BaseView):
-    _template = 'reset_password_request.html'
+class AuthProfileForgotPasswordRequest(BaseView):
+    _template = 'forgot_password_request.html'
     
     def get(self):
         self._context["errors"] = {}
@@ -119,11 +119,11 @@ class AuthProfileResetPassword(BaseView):
     
     def post(self):
         # Send password reset mail here
-        return self.redirect('auth.reset_password_confirmation_api')
+        return self.redirect('auth.forgot_password_confirmation_api')
 
 
-class AuthProfileResetPasswordConfirmation(BaseView):
-    _template = 'reset_password_request_confirmation.html'
+class AuthProfileForgotPasswordConfirmation(BaseView):
+    _template = 'forgot_password_request_confirmation.html'
     
     def get(self):
         self._context["errors"] = {}
