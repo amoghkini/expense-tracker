@@ -8,6 +8,7 @@ from auth.views import (
     AuthProfileNotificationsSettings,
     AuthProfileForgotPasswordRequest,
     AuthProfileForgotPasswordConfirmation,
+    AuthProfileResetPassword,
     AuthSignUpView,
 )
 
@@ -15,14 +16,15 @@ from auth.views import (
 routes = [
     (
         (auth),
+            ('/forgot-password-confirmation', 'forgot_password_confirmation_api', AuthProfileForgotPasswordConfirmation),
+            ('/forgot-password-request', 'forgot_password_request_api', AuthProfileForgotPasswordRequest),
             ('/login', 'login_api', AuthLoginView),
             ('/logout', 'logout_api', AuthLogOutView),
             ('/profile', 'profile_api', AuthProfileView),
             ('/profile-settings', 'profile_settings_api', AuthProfileSettingsView),
             ('/profile-security', 'profile_security_api', AuthProfileSecurity),
             ('/profile-notifications-settings', 'profile_notifications_settings_api', AuthProfileNotificationsSettings),
-            ('/forgot-password-request', 'forgot_password_request_api', AuthProfileForgotPasswordRequest),
-            ('/forgot-password-confirmation', 'forgot_password_confirmation_api', AuthProfileForgotPasswordConfirmation),
+            ('/reset-password', 'reset_password_api', AuthProfileResetPassword),
             ('/signup', 'signup_api', AuthSignUpView),
     )
 ]
