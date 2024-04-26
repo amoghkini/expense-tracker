@@ -9,6 +9,7 @@ from auth.views import (
     AuthProfileForgotPasswordRequest,
     AuthProfileForgotPasswordConfirmation,
     AuthProfileResetPassword,
+    AuthProfileChangePassword,
     AuthSignUpView,
 )
 
@@ -16,6 +17,7 @@ from auth.views import (
 routes = [
     (
         (auth),
+            ('/change-password', 'change_password_api', AuthProfileChangePassword),
             ('/forgot-password-confirmation', 'forgot_password_confirmation_api', AuthProfileForgotPasswordConfirmation),
             ('/forgot-password-request', 'forgot_password_request_api', AuthProfileForgotPasswordRequest),
             ('/login', 'login_api', AuthLoginView),

@@ -142,3 +142,12 @@ class AuthProfileResetPassword(BaseView):
     def post(self):
         # Send password reset mail here
         return self.redirect('core.index_api')
+    
+    
+class AuthProfileChangePassword(BaseView):
+    _template = 'change_password.html'
+    
+    def get(self):
+        self._context["errors"] = {}
+        self._context["form_data"] = request.form
+        return self.render()
