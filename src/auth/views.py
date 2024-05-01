@@ -133,7 +133,6 @@ class AuthProfileForgotPasswordRequest(BaseView):
             return self.render()
         
 
-
 class AuthProfileForgotPasswordConfirmation(BaseView):
     _template = 'forgot_password_request_confirmation.html'
     
@@ -147,13 +146,35 @@ class AuthProfileResetPassword(BaseView):
     _template = 'reset_password.html'
     
     def get(self):
-        self._context["errors"] = {}
-        self._context["form_data"] = request.form
-        return self.render()
+        import pdb;pdb.set_trace()
+        form_data: dict = request.args.to_dict()
+        response_handler: Response = BusinessLogic.reset_password_token_verification(form_data)
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+            self._context["errors"] = {}
+            self._context["form_data"] = response_handler.data
+            return self.render()
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
+            return self.redirect('core.index_api')
     
-    def post(self):
-        # Send password reset mail here
-        return self.redirect('core.index_api')
+    # def post(self):
+    #     form_data: dict = request.args.to_dict()
+    #     response_handler: Response = BusinessLogic.reset_password_token_verification(form_data)
+    #     if response_handler.success:
+    #         if response_handler.message:
+    #             self.success(response_handler.message)
+    #         self._context["errors"] = {}
+    #         return self.redirect('core.index_api')
+    #     else:
+    #         if response_handler.message:
+    #             self.warning(response_handler.message)
+    #         self._context["errors"] = response_handler.errors
+    #         self._context["form_data"] = request.form
+    #         return self.render()
+        
     
     
 class AuthProfileChangePassword(BaseView):

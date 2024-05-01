@@ -135,7 +135,32 @@ class BusinessLogic:
             response.success = False
         return response
         
-        
+    @staticmethod
+    def reset_password_token_verification(form_data: dict) -> Response:
+        response = Response()
+        try:
+            token: str = form_data.get('token', '')
+            
+            token_serializer = TokenSerializer('amogh')
+            email = token_serializer.verify_token(token, max_age=3600)  
+            
+            user: User = User.get_by_email(email)
+            
+            if not user:
+                raise UserNotFoundException
+            response.data = {'email': email}
+            # response.message = "Password reset successfully"
+            
+        except UserNotFoundException as e:
+            print(f"The user is invalid or token is expired")
+            response.errors['email'] = "The entered email id or password may be incorrect"
+            response.success = False
+        except Exception as e:
+            print(f"An exception occured while requesting password reset {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
+         
     @staticmethod
     def get_new_user_model(form_data: dict) -> User:
         new_user = User()
