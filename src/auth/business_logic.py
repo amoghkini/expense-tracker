@@ -2,7 +2,7 @@ from pydantic import ValidationError
 
 from auth.exceptions import IncorrectCredentialsException, UserNotFoundException
 from auth.models import User
-from auth.data_validator import UserSignUpValidator
+from auth.data_validator import UserSignUpValidator, ChangePasswordRequestValidator
 from auth.utils import Utils
 from utils.response_handler import Response
 from utils.utils import Utils as CommonUtils
@@ -66,6 +66,43 @@ class BusinessLogic:
             response.success = False
         except Exception as e:
             print(f"An exception occured while registering the user {str(e)}")
+            response.message = f"An internal error occurred"
+            response.success = False
+        return response
+    
+    @staticmethod
+    def change_password(
+        form_data: dict,
+        email: str
+    ) -> Response:
+        
+        response = Response()
+        try:
+            import pdb;pdb.set_trace()
+            user_data = ChangePasswordRequestValidator(**form_data)
+
+            # Retrieve the user from the database
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                raise UserNotFoundException("The user is not registered in system")
+            
+            if Utils.check_password_hash(user.password, user_data.old_password):
+                user.password = Utils.generate_hashed_password(user_data.new_password)
+                user.commit()
+                response.message = "Password changed successfully"
+            else:
+                raise IncorrectCredentialsException("Please enter the correct old password!")    
+        except ValidationError as e:
+            response.errors = {error['loc'][0]: f"Please provide a valid {CommonUtils.title_case(error['loc'][0])}" if error['type'] == 'value_error.missing' else error['msg']  for error in e.errors()}
+            response.message = "Validation Error: Please correct the errors below"
+            response.success = False
+        except (IncorrectCredentialsException, UserNotFoundException) as e:
+            print(f"Error encountered {e}")
+            response.errors['old_password'] = e
+            response.success = False
+            
+        except Exception as e:
+            print(f"An exception occured while changing the user password {str(e)}")
             response.message = f"An internal error occurred"
             response.success = False
         return response
