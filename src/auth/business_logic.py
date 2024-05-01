@@ -1,9 +1,11 @@
 from pydantic import ValidationError
+from typing import Union
 
 from auth.exceptions import IncorrectCredentialsException, UserNotFoundException
 from auth.models import User
 from auth.data_validator import UserSignUpValidator, ChangePasswordRequestValidator
-from auth.utils import Utils
+from auth.utils import Utils, TokenSerializer
+from utils.flask_utils import get_external_url
 from utils.response_handler import Response
 from utils.utils import Utils as CommonUtils
 
@@ -78,7 +80,6 @@ class BusinessLogic:
         
         response = Response()
         try:
-            import pdb;pdb.set_trace()
             user_data = ChangePasswordRequestValidator(**form_data)
 
             # Retrieve the user from the database
@@ -107,6 +108,34 @@ class BusinessLogic:
             response.success = False
         return response
     
+    @staticmethod
+    def request_password_reset(form_data: dict) -> Response:
+        response = Response()
+        try:
+            email: str = form_data.get('email', '')
+            
+            user: User = User.get_by_email(email)
+            if not user:
+                raise UserNotFoundException
+            
+            token_serializer = TokenSerializer('amogh')
+            verify_token: Union[str, bytes] = token_serializer.generate_token(email)
+            password_reset_url: str = get_external_url('auth.reset_password_api',{"token":verify_token})
+            print("Password reset link", password_reset_url)
+            
+            response.message = "The password reset link has been sent successfully on registered email address"
+            
+        except UserNotFoundException as e:
+            print(f"The entered email id or password may be incorrect")
+            response.errors['email'] = "The entered email id or password may be incorrect"
+            response.success = False
+        except Exception as e:
+            print(f"An exception occured while requesting password reset {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
+        
+        
     @staticmethod
     def get_new_user_model(form_data: dict) -> User:
         new_user = User()

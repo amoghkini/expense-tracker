@@ -116,10 +116,22 @@ class AuthProfileForgotPasswordRequest(BaseView):
         self._context["errors"] = {}
         self._context["form_data"] = request.form
         return self.render()
-    
+            
     def post(self):
-        # Send password reset mail here
-        return self.redirect('auth.forgot_password_confirmation_api')
+        form_data: dict = request.form.to_dict()
+        response_handler: Response = BusinessLogic.request_password_reset(form_data)
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+            self._context["errors"] = {}
+            return self.redirect('auth.forgot_password_confirmation_api')
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
+            self._context["errors"] = response_handler.errors
+            self._context["form_data"] = request.form
+            return self.render()
+        
 
 
 class AuthProfileForgotPasswordConfirmation(BaseView):
