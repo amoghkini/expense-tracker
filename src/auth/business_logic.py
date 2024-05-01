@@ -3,7 +3,7 @@ from typing import Union
 
 from auth.exceptions import IncorrectCredentialsException, UserNotFoundException
 from auth.models import User
-from auth.data_validator import UserSignUpValidator, ChangePasswordRequestValidator
+from auth.data_validator import UserSignUpValidator, ChangePasswordRequestValidator, ResetPasswordValidator
 from auth.utils import Utils, TokenSerializer
 from utils.flask_utils import get_external_url
 from utils.response_handler import Response
@@ -161,6 +161,39 @@ class BusinessLogic:
             response.success = False
         return response
          
+    @staticmethod
+    def reset_password(form_data: dict) -> Response:
+        
+        response = Response()
+        try:
+            user_data = ResetPasswordValidator(**form_data)
+            
+            # Retrieve the user from the database
+            user = User.query.filter_by(email=form_data.get('email')).first()
+            if not user:
+                raise UserNotFoundException("The user is not registered in system")
+            
+            if Utils.check_password_hash(user.password, user_data.new_password):
+                raise IncorrectCredentialsException("New password should not be same as old password!")   
+            else:
+                user.password = Utils.generate_hashed_password(user_data.new_password)
+                user.commit()
+            response.message = "Password reset successfully"
+            
+        except ValidationError as e:
+            response.errors = {error['loc'][0]: f"Please provide a valid {CommonUtils.title_case(error['loc'][0])}" if error['type'] == 'value_error.missing' else error['msg']  for error in e.errors()}
+            response.message = "Validation Error: Please correct the errors below"
+            response.success = False
+        except (IncorrectCredentialsException, UserNotFoundException) as e:
+            print(f"Error encountered {e}")
+            response.message = str(e)
+            response.success = False
+        except Exception as e:
+            print(f"An exception occured while changing the user password {str(e)}")
+            response.message = f"An internal error occurred"
+            response.success = False
+        return response
+    
     @staticmethod
     def get_new_user_model(form_data: dict) -> User:
         new_user = User()
