@@ -21,14 +21,20 @@
             <div class="row align-items-center">
             <div class="col-md-7">
                 <h4 class="mb-1">{{profile_data.get('first_name')}} {{profile_data.get('last_name')}}</h4>
-                <p class="small mb-3"><span class="badge badge-dark">{{profile_data.get('email')}}, India</span></p>
+                <p class="small mb-3"><span class="badge badge-dark">{% if profile_data.get('state') %} {{profile_data.get('state')}}, {% endif %} India</span></p>
             </div>
             </div>
             <div class="row mb-4">
                 <div class="col">
-                    <p class="small mb-0 text-muted">{{profile_data.get('email')}}</p>
-                    <p class="small mb-0 text-muted">{{profile_data.get('email')}}</p>
-                    <p class="small mb-0 text-muted">{{profile_data.get('email')}}</p>
+                    {% if profile_data.get('address1') %}
+                        <p class="small mb-0 text-muted">{{profile_data.get('address1')}}</p>
+                    {% endif %}   
+                    {% if profile_data.get('address2') %}
+                        <p class="small mb-0 text-muted">{{profile_data.get('address2')}}</p>
+                    {% endif %}
+                    {% if profile_data.get('mobile_no') %}
+                        <p class="small mb-0 text-muted">+91-{{profile_data.get('mobile_no')}}</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
