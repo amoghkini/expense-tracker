@@ -73,6 +73,26 @@ class BusinessLogic:
         return response
     
     @staticmethod
+    def fetch_profile_data(email: str) -> Response:
+        response = Response()
+        try:            
+            user: User = User.get_by_email(email)
+            
+            if not user:
+                raise UserNotFoundException
+            response.data = user.to_dict()
+            print(response.data)
+        except UserNotFoundException as e:
+            print(f"The user is invalid")
+            response.errors['email'] = "The entered email invalid"
+            response.success = False
+        except Exception as e:
+            print(f"An exception occured while requesting password reset {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
+    
+    @staticmethod
     def change_password(
         form_data: dict,
         email: str

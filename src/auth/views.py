@@ -75,9 +75,17 @@ class AuthProfileView(BaseView):
     @login_required
     def get(self):
         self._context["errors"] = {}
-        self._context["form_data"] = request.form
+        response_handler: Response = BusinessLogic.fetch_profile_data(g.email)
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+            self._context["errors"] = {}
+            self._context["profile_data"] = response_handler.data
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
         return self.render()
-    
+        
     
 class AuthProfileSettingsView(BaseView):
     _template = 'profile_settings.html'
