@@ -58,7 +58,7 @@ class BusinessLogic:
         try:
             user = UserSignUpValidator(**form_data)
             print(f"Registering new user: {user.email}")
-            new_user = BusinessLogic.get_new_user_model(form_data)
+            new_user = BusinessLogic.form_to_model(form_data)
             new_user.save(commit=True)
             
             response.message = "User created successfully"
@@ -87,8 +87,38 @@ class BusinessLogic:
             response.errors['email'] = "The entered email invalid"
             response.success = False
         except Exception as e:
-            print(f"An exception occured while requesting password reset {str(e)}")
+            print(f"An exception occured while fetching the profile data {str(e)}")
             response.message = "An internal error occured"
+            response.success = False
+        return response
+    
+    @staticmethod
+    def update_profile(
+        form_data: dict,
+        email: str
+    ) -> Response:
+        response = Response()
+        try:
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                raise UserNotFoundException("The user is not registered in system")
+            
+            user.first_name = form_data.get('first_name')
+            user.last_name = form_data.get('last_name')
+            user.address_line1 = form_data.get('address_line1')
+            user.address_line2 = form_data.get('address_line2')
+            user.state = form_data.get('state')
+            user.zip_code = form_data.get('zip_code')
+            user.commit()
+            response.message = "Data updated successfully" 
+       
+        except (UserNotFoundException) as e:
+            print(f"Error encountered {e}")
+            response.success = False
+            
+        except Exception as e:
+            print(f"An exception occured while changing the user password {str(e)}")
+            response.message = f"An internal error occurred"
             response.success = False
         return response
     

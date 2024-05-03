@@ -1,6 +1,7 @@
 from flask import request, g
 
 from auth.business_logic import BusinessLogic
+from auth.constants import IndianStatesAndUTs
 from main.baseview import BaseView
 from utils.flask_utils import login_required
 from utils.response_handler import Response
@@ -93,9 +94,38 @@ class AuthProfileSettingsView(BaseView):
     @login_required
     def get(self):
         self._context["errors"] = {}
-        self._context["form_data"] = request.form
+        response_handler: Response = BusinessLogic.fetch_profile_data(g.email)
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+            self._context["errors"] = {}
+            self._context['states'] = IndianStatesAndUTs.allowed_values()
+            self._context["profile_data"] = response_handler.data
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
+            self._context["errors"] = {}
+            self._context['states'] = IndianStatesAndUTs.allowed_values()
+            self._context["profile_data"] = {}
         return self.render()
     
+    @login_required
+    def post(self):
+        form_data: dict = request.form.to_dict()
+        response_handler: Response = BusinessLogic.update_profile(form_data, g.email)
+
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+            self._context["errors"] = {}
+            return self.redirect('auth.profile_settings_api')
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
+            self._context["errors"] = response_handler.errors
+            self._context["form_data"] = request.form
+            return self.render()
+        
 
 class AuthProfileSecurity(BaseView):
     _template = 'security.html'
