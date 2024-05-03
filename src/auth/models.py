@@ -22,6 +22,10 @@ class User(Model):
     last_login_time = Column(DateTime(), nullable=True)  
     profile_pic = Column(String, nullable=True)
     date_of_birth = Column(DateTime(), nullable=True)
+    address_line1 = Column(String, nullable=True)
+    address_line2 = Column(String, nullable=True)
+    state = Column(String, nullable=True)
+    zip_code = Column(String, nullable=True)
 
     transactions = relationship('income_expense_tracker.models.Transactions', backref='email', lazy=True)
     

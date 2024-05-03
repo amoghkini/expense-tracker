@@ -75,3 +75,46 @@ class UserSignUpValidator(BaseModel):
     
     def __str__(self) -> str:
         return f"{self.email}"
+    
+
+class ChangePasswordRequestValidator(BaseModel):
+    new_password: str
+    confirm_password: str
+    old_password: str
+    
+    @validator('new_password')
+    def password_requirements(cls, new_password):
+        result = Utils.validate(new_password, RegularExpressions.PASSWORD_REGEX)
+        if not result:
+            raise ValueError("To create a password, you have to meet all of the requirement")
+        return new_password
+    
+    @validator('confirm_password')
+    def password_match(cls, confirm_password , values, **kwargs):
+        if 'new_password'in values and confirm_password != values.get('new_password'):
+            raise ValueError("The new password and confirm password should be same")
+        return confirm_password
+    
+    @validator('old_password')
+    def old_password_match(cls, old_password , values, **kwargs):
+        if 'new_password'in values and old_password == values.get('new_password'):
+            raise ValueError("The old and new password should be different")
+        return old_password
+    
+
+class ResetPasswordValidator(BaseModel):
+    new_password: str
+    confirm_password: str
+    
+    @validator('new_password')
+    def password_requirements(cls, new_password):
+        result = Utils.validate(new_password, RegularExpressions.PASSWORD_REGEX)
+        if not result:
+            raise ValueError("To create a password, you have to meet all of the requirement")
+        return new_password
+    
+    @validator('confirm_password')
+    def password_match(cls, confirm_password , values, **kwargs):
+        if 'new_password'in values and confirm_password != values.get('new_password'):
+            raise ValueError("The new password and confirm password should be same")
+        return confirm_password
