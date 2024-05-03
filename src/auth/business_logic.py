@@ -245,7 +245,7 @@ class BusinessLogic:
         return response
     
     @staticmethod
-    def get_new_user_model(form_data: dict) -> User:
+    def form_to_model(form_data: dict) -> User:
         new_user = User()
         new_user.email = form_data.get("email")
         new_user.first_name = form_data.get("first_name")
