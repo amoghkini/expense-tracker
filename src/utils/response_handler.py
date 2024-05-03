@@ -4,10 +4,10 @@ class Response:
     def __init__(
         self,
         success: bool = True,
-        data: Optional[Any] = None,    
-        message: Optional[str] = None,
-        errors: Optional[dict] = None,
-        next_page: Optional[str]= None
+        data: Any = None,    
+        message: str = '',
+        errors: dict = {},
+        next_page: str = ''
     ) -> None:
         self.success = success
         self.data = data
