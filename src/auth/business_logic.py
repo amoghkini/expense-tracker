@@ -245,6 +245,27 @@ class BusinessLogic:
         return response
     
     @staticmethod
+    def manage_2fa(
+        form_data: dict,
+        email: str
+    ) -> Response:
+        response = Response()
+        try:
+            action: str = form_data.get('action', '')            
+            
+            user: User = User.get_by_email(email)
+            if not user:
+                raise UserNotFoundException
+
+            user.two_factor_auth = True if action.lower() == 'enable' else False
+            
+        except Exception as e:
+            print(f"An exception occured while changing 2fa status {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
+    
+    @staticmethod
     def form_to_model(form_data: dict) -> User:
         new_user = User()
         new_user.email = form_data.get("email")

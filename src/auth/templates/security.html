@@ -28,7 +28,11 @@
                         <div class="row align-items-center">
                             <div class="col">
                                 <strong class="mb-2">Change Password</strong>
-                                <p class="text-muted mb-0">Last changed on 2024/04/26.</p>
+                                {% if profile_data.get('last_password_change_date') %}
+                                    <p class="text-muted mb-0">Last changed on 2024/04/26.</p>
+                                {% else %}
+                                    <p class="text-muted mb-0">The password is never changed.</p>
+                                {% endif %}
                             </div> <!-- .col -->
                             <div class="col-auto">
                                 <a href="{{ url_for('auth.change_password_api') }}"><button class="btn btn-primary btn-sm">Change</button></a>
@@ -39,8 +43,7 @@
                         <div class="row align-items-center">
                             <div class="col">
                                 <strong class="mb-2">Enable Activity Logs</strong>
-                                <p class="text-muted mb-0">Donec id elit non mi porta gravida at eget metus.
-                                </p>
+                                <p class="text-muted mb-0">This will log all the user activities.</p>
                             </div> <!-- .col -->
                             <div class="col-auto">
                                 <div class="custom-control custom-switch">
@@ -55,26 +58,22 @@
                         <div class="row align-items-center">
                             <div class="col">
                                 <strong class="mb-2">2FA Authentication</strong>
-                                <span class="badge badge-pill badge-success">Enabled</span>
-                                <p class="text-muted mb-0">Maecenas sed diam eget risus varius blandit.</p>
+                                {% if profile_data.get('two_factor_auth') %}
+                                    <span class="badge badge-pill badge-success">Enabled</span>
+                                {% else %}
+                                    <span class="badge badge-pill badge-danger">Disabled</span>
+                                {% endif %}
+                                
+                                <p class="text-muted mb-0">Enable two factor authentication to increase security.</p>
                             </div> <!-- .col -->
                             <div class="col-auto">
-                                <button class="btn btn-primary btn-sm">Disable</button>
-                            </div> <!-- .col -->
-                        </div> <!-- .row -->
-                    </div> <!-- .list-group-item -->
-                    <div class="list-group-item">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <strong class="mb-2">Activate Pin Code</strong>
-                                <p class="text-muted mb-0">Donec id elit non mi porta gravida at eget metus.
-                                </p>
-                            </div> <!-- .col -->
-                            <div class="col-auto">
-                                <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="pinCode">
-                                    <span class="custom-control-label"></span>
-                                </div>
+                                {% if profile_data.get('two_factor_auth') %}
+                                    <a href="{{ url_for('auth.manage_2fa_api', action='disable') }}"><button
+                                            class="btn btn-primary btn-sm">Disable</button></a>
+                                {% else %}
+                                    <a href="{{ url_for('auth.manage_2fa_api', action='enable') }}"><button
+                                            class="btn btn-primary btn-sm">Enable</button></a>
+                                {% endif %}
                             </div> <!-- .col -->
                         </div> <!-- .row -->
                     </div> <!-- .list-group-item -->

@@ -1,6 +1,6 @@
 from auth.constants import UserStatus
 from database import (
-    BigInteger,
+    Boolean,
     Column, 
     DateTime,
     Model,
@@ -26,7 +26,8 @@ class User(Model):
     address_line2 = Column(String, nullable=True)
     state = Column(String, nullable=True)
     zip_code = Column(String, nullable=True)
-
+    last_password_change_date = Column(DateTime(), nullable=True)  
+    two_factor_auth = Column(Boolean, default=False)
     transactions = relationship('income_expense_tracker.models.Transactions', backref='email', lazy=True)
     
     @classmethod
