@@ -27,8 +27,7 @@ class AuthLoginView(BaseView):
             self._context["errors"] = {}
             next_page = request.args.get('next_page')
             if next_page:
-                from flask import redirect, url_for
-                return redirect(url_for(next_page))
+                return self.redirect(next_page)
             return self.redirect('core.index_api')
         else:
             if response_handler.message:
