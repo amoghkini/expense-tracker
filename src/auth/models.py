@@ -28,6 +28,7 @@ class User(Model):
     zip_code = Column(String, nullable=True)
     last_password_change_date = Column(DateTime(), nullable=True)  
     two_factor_auth = Column(Boolean, default=False)
+    otp_secret = Column(String, nullable=True)
     transactions = relationship('income_expense_tracker.models.Transactions', backref='email', lazy=True)
     
     @classmethod

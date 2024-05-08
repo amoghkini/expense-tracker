@@ -1,8 +1,11 @@
+import pyotp
 import re
-from flask import session
 from itsdangerous import URLSafeTimedSerializer
 from typing import Optional, Union
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from flask import session
+
 
 class Utils:
     
@@ -98,3 +101,61 @@ class TokenSerializer:
             return data
         except Exception as e:
             return None
+      
+        
+class OTPUtils:
+    """
+    Utility class for generating and verifying OTPs (One-Time Passwords).
+    """
+    
+    @staticmethod
+    def generate_otp_secret() -> str:
+        """
+        Get a TOTP (Time-based One-Time Password) object for the specified user.
+
+        Args:
+            user (User): The user for whom the OTP object is retrieved.
+
+        Returns:
+            pyotp.TOTP: A TOTP object initialized with the user's OTP secret.
+
+        Raises:
+            ValueError: If the user does not have an OTP secret.
+        """
+        return pyotp.random_base32()
+    
+    @staticmethod
+    def get_otp_object(user) -> pyotp.TOTP:
+        """
+        Get a TOTP (Time-based One-Time Password) object for the specified user.
+
+        Args:
+            user (User): The user for whom the OTP object is retrieved.
+
+        Returns:
+            pyotp.TOTP: A TOTP object initialized with the user's OTP secret.
+
+        Raises:
+            ValueError: If the user does not have an OTP secret.
+        """
+        secret: str = user.otp_secret  
+        return pyotp.TOTP(secret)
+    
+    @staticmethod
+    def is_otp_valid(user, otp: str) -> bool:
+        """
+        Verify if the provided OTP is valid for the specified user.
+
+        Args:
+            user (User): The user for whom the OTP is verified.
+            otp (str): The OTP entered by the user.
+
+        Returns:
+            bool: True if the OTP is valid, False otherwise.
+
+        Raises:
+            ValueError: If the user does not have an OTP secret.
+        """
+        
+        otp_object = OTPUtils.get_otp_object(user)
+        return otp_object.verify(otp)
