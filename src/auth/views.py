@@ -1,4 +1,4 @@
-from flask import request, g
+from flask import request, g, session
 
 from auth.business_logic import BusinessLogic
 from auth.constants import IndianStatesAndUTs
@@ -17,7 +17,6 @@ class AuthLoginView(BaseView):
     
     def post(self):
         self._context["errors"] = {}
-        
         form_data: dict = request.form.to_dict()
         response_handler: Response = BusinessLogic.process_login(form_data)
         
@@ -26,10 +25,10 @@ class AuthLoginView(BaseView):
                 self.success(response_handler.message)
             self._context["errors"] = {}
             next_page = request.args.get('next_page')
+            session['email'] = form_data.get('email')
             if next_page:
-                from flask import redirect, url_for
-                return redirect(url_for(next_page))
-            return self.redirect('core.index_api')
+                return self.redirect(response_handler.next_page, next_page=next_page)
+            return self.redirect(response_handler.next_page)
         else:
             if response_handler.message:
                 self.warning(response_handler.message)
@@ -38,6 +37,49 @@ class AuthLoginView(BaseView):
             return self.render()
     
 
+class AuthVerifyOTP(BaseView):
+    _template: str = 'verify_otp.html'
+    
+    def get(self):
+        self._context["errors"] = {}
+        self._context["form_data"] = request.form
+        email: str = session.pop('email', None)
+        self._context["email"]  = email
+
+        if not email:
+            return self.redirect('auth.login_api')
+            
+        response_handler: Response = BusinessLogic.generate_otp(email)
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
+            self._context["errors"] = response_handler.errors
+        return self.render()
+    
+    def post(self):
+
+        self._context["errors"] = {}
+        form_data: dict = request.form.to_dict()
+        response_handler: Response = BusinessLogic.verify_otp(form_data)
+        
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+            self._context["errors"] = {}
+            next_page = request.args.get('next_page')
+            if next_page:
+                return self.redirect(next_page)
+            return self.redirect('core.index_api')
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
+            self._context["errors"] = response_handler.errors
+            self._context["form_data"] = request.form
+            return self.render()
+    
 class AuthLogOutView(BaseView):
     
     @login_required
@@ -69,6 +111,7 @@ class AuthSignUpView(BaseView):
             self._context["errors"] = response_handler.errors
             self._context["form_data"] = request.form
             return self.render()
+
 
 class AuthProfileView(BaseView):
     _template = 'profile.html'
@@ -133,9 +176,16 @@ class AuthProfileSecurity(BaseView):
     @login_required
     def get(self):
         self._context["errors"] = {}
-        self._context["form_data"] = request.form
+        response_handler: Response = BusinessLogic.fetch_profile_data(g.email)
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+            self._context["errors"] = {}
+            self._context["profile_data"] = response_handler.data
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
         return self.render()
-    
 
 class AuthProfileNotificationsSettings(BaseView):
     _template = 'notifications_settings.html'
@@ -213,8 +263,7 @@ class AuthProfileResetPassword(BaseView):
             self._context["form_data"] = request.form
             return self.render()
         
-    
-    
+        
 class AuthProfileChangePassword(BaseView):
     _template = 'change_password.html'
     
@@ -239,3 +288,21 @@ class AuthProfileChangePassword(BaseView):
             self._context["form_data"] = request.form
             return self.render()
         
+        
+class AuthManageTwoFactorAuth(BaseView):
+    
+    _template = 'security.html'
+        
+    def get(self):
+        form_data: dict = request.args.to_dict()
+        response_handler: Response = BusinessLogic.manage_2fa(form_data, g.email)
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+            self._context["errors"] = {}
+            self._context["form_data"] = response_handler.data
+            return self.redirect('auth.profile_security_api')
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
+            return self.redirect('core.index_api')

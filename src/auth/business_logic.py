@@ -1,10 +1,10 @@
 from pydantic import ValidationError
 from typing import Union
 
-from auth.exceptions import IncorrectCredentialsException, UserNotFoundException
+from auth.exceptions import IncorrectCredentialsException, IncorrectOTPException, UserNotFoundException
 from auth.models import User
 from auth.data_validator import UserSignUpValidator, ChangePasswordRequestValidator, ResetPasswordValidator
-from auth.utils import Utils, TokenSerializer
+from auth.utils import Utils, TokenSerializer, OTPUtils
 from utils.flask_utils import get_external_url
 from utils.response_handler import Response
 from utils.utils import Utils as CommonUtils
@@ -25,16 +25,78 @@ class BusinessLogic:
             if not user:
                 raise UserNotFoundException
             
-            if user.check_password(password):
-                print(f"{user.first_name} logged in successfully")
-            else:
+            if not user.check_password(password):
                 raise IncorrectCredentialsException
+            
             # To Do: Update last login date 
-            Utils.login_user(email)
-            response.message = "User logged in successfully"
+            if user.two_factor_auth:
+                response.next_page = 'auth.verify_otp_api'
+            else:
+                Utils.login_user(email)
+                response.next_page = 'core.index_api'
+                response.message = "User logged in successfully"
         except (IncorrectCredentialsException, UserNotFoundException) as e:
             print(f"The entered email id or password may be incorrect")
             response.errors['email'] = "The entered email id or password may be incorrect"
+            response.success = False
+        except Exception as e:
+            print(f"An exception occured while login {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
+    
+    @staticmethod
+    def generate_otp(email: str) -> Response:
+        response = Response()
+        try:
+            user: User = User.get_by_email(email)
+            if not user:
+                raise UserNotFoundException
+            
+            # Check if 2fa is enabled and generate the otp
+            if user.two_factor_auth:
+                new_otp = OTPUtils.get_otp_object(user).now()
+                print(f"New OTP {new_otp}")
+                
+                # Send email message
+                response.message = "OTP sent on registered email address"
+            else:
+                raise ValueError('Two factor authentication is not enabled')
+        except UserNotFoundException as e:
+            print(f"The entered email id or password may be incorrect")
+            response.errors['email'] = "The entered email id is not valid"
+            response.success = False
+        except Exception as e:
+            print(f"An exception occured while generating OTP {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
+            
+    @staticmethod
+    def verify_otp(form_data: dict) -> Response:
+        response = Response()
+        try:
+            email: str = form_data.get('email', '')
+            otp: str = form_data.get('otp', '')
+            
+            user: User = User.get_by_email(email)
+            if not user:
+                raise UserNotFoundException
+
+            if user.two_factor_auth and  OTPUtils.is_otp_valid(user, otp):
+                print("OTP verified successfully")
+                Utils.login_user(email)
+                response.message = "User logged in successfully"
+            else:
+                raise IncorrectOTPException("The entered OTP is incorrect")
+            
+        except IncorrectOTPException as e:
+            print(f"The entered OTP is incorrect")
+            response.errors['otp'] = e
+            response.success = False
+        except UserNotFoundException as e:
+            print(f"The entered email id is incorrect")
+            response.errors['email'] = "The entered email id is not valid"
             response.success = False
         except Exception as e:
             print(f"An exception occured while login {str(e)}")
@@ -112,7 +174,7 @@ class BusinessLogic:
             user.commit()
             response.message = "Data updated successfully" 
        
-        except (UserNotFoundException) as e:
+        except UserNotFoundException as e:
             print(f"Error encountered {e}")
             response.success = False
             
@@ -245,7 +307,33 @@ class BusinessLogic:
         return response
     
     @staticmethod
-    def get_new_user_model(form_data: dict) -> User:
+    def manage_2fa(
+        form_data: dict,
+        email: str
+    ) -> Response:
+        response = Response()
+        try:
+            action: str = form_data.get('action', '')            
+            
+            user: User = User.get_by_email(email)
+            if not user:
+                raise UserNotFoundException
+            
+            if action.lower() == 'enable':
+                user.two_factor_auth = True
+                user.otp_secret = OTPUtils.generate_otp_secret()
+            else:    
+                user.two_factor_auth = False
+                user.otp_secret = None
+            
+        except Exception as e:
+            print(f"An exception occured while changing 2fa status {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
+    
+    @staticmethod
+    def form_to_model(form_data: dict) -> User:
         new_user = User()
         new_user.email = form_data.get("email")
         new_user.first_name = form_data.get("first_name")
