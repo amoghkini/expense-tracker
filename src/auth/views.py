@@ -73,15 +73,6 @@ class AuthVerifyOTP(BaseView):
 
         if not email:
             return self.redirect('auth.login_api')
-            
-        response_handler: Response = BusinessLogic.generate_otp(email)
-        if response_handler.success:
-            if response_handler.message:
-                self.success(response_handler.message)
-        else:
-            if response_handler.message:
-                self.warning(response_handler.message)
-            self._context["errors"] = response_handler.errors
         return self.render()
     
     def post(self):

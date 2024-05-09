@@ -30,6 +30,8 @@ class BusinessLogic:
             
             # To Do: Update last login date 
             if user.two_factor_auth:
+                new_otp = OTPUtils.get_otp_object(user).now()
+                print(f"New OTP {new_otp}")       
                 response.next_page = 'auth.verify_otp_api'
             else:
                 Utils.login_user(email)
@@ -53,7 +55,11 @@ class BusinessLogic:
             
             user: User = User.get_by_email(email)
             if not user:
-                print("The user is not registered in the system")           
+                print("The user is not registered in the system")    
+            
+            if user.two_factor_auth:
+                new_otp = OTPUtils.get_otp_object(user).now()
+                print(f"New OTP {new_otp}")       
             response.message = "The OTP is sent on registered email address"
             
         except UserNotFoundException as e:
@@ -64,36 +70,8 @@ class BusinessLogic:
             print(f"An exception occured while requesting password reset {str(e)}")
             response.message = "An internal error occured"
             response.success = False
-        return response
-        
-        
-    @staticmethod
-    def generate_otp(email: str) -> Response:
-        response = Response()
-        try:
-            user: User = User.get_by_email(email)
-            if not user:
-                raise UserNotFoundException
-            
-            # Check if 2fa is enabled and generate the otp
-            if user.two_factor_auth:
-                new_otp = OTPUtils.get_otp_object(user).now()
-                print(f"New OTP {new_otp}")
-                
-                # Send email message
-                response.message = "OTP sent on registered email address"
-            else:
-                raise ValueError('Two factor authentication is not enabled')
-        except UserNotFoundException as e:
-            print(f"The entered email id or password may be incorrect")
-            response.errors['email'] = "The entered email id is not valid"
-            response.success = False
-        except Exception as e:
-            print(f"An exception occured while generating OTP {str(e)}")
-            response.message = "An internal error occured"
-            response.success = False
-        return response
-            
+        return response     
+   
     @staticmethod
     def verify_otp(form_data: dict) -> Response:
         response = Response()
