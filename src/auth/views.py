@@ -24,8 +24,8 @@ class AuthLoginView(BaseView):
             if response_handler.message:
                 self.success(response_handler.message)
             self._context["errors"] = {}
-            next_page = request.args.get('next_page')
             session['email'] = form_data.get('email')
+            next_page = request.args.get('next_page')
             if next_page:
                 return self.redirect(response_handler.next_page, next_page=next_page)
             return self.redirect(response_handler.next_page)
@@ -53,6 +53,9 @@ class AuthLoginWithOTPView(BaseView):
                 self.success(response_handler.message)
             session['email'] = form_data.get('email')
             self._context["errors"] = {}
+            next_page = request.args.get('next_page')
+            if next_page:
+                return self.redirect('auth.verify_otp_api', next_page=next_page)
             return self.redirect('auth.verify_otp_api')
         else:
             if response_handler.message:
