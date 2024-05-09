@@ -37,6 +37,31 @@ class AuthLoginView(BaseView):
             return self.render()
     
 
+class AuthLoginWithOTPView(BaseView):
+    _template = 'login_with_otp.html'
+    
+    def get(self):
+        self._context["errors"] = {}
+        self._context["form_data"] = request.form
+        return self.render()
+    
+    def post(self):
+        form_data: dict = request.form.to_dict()
+        response_handler: Response = BusinessLogic.login_with_otp(form_data)
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+            session['email'] = form_data.get('email')
+            self._context["errors"] = {}
+            return self.redirect('auth.verify_otp_api')
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
+            self._context["errors"] = response_handler.errors
+            self._context["form_data"] = request.form
+            return self.render()
+        
+        
 class AuthVerifyOTP(BaseView):
     _template: str = 'verify_otp.html'
     

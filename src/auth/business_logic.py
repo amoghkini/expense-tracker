@@ -46,6 +46,28 @@ class BusinessLogic:
         return response
     
     @staticmethod
+    def login_with_otp(form_data: dict) -> Response:
+        response = Response()
+        try:
+            email: str = form_data.get('email', '')
+            
+            user: User = User.get_by_email(email)
+            if not user:
+                print("The user is not registered in the system")           
+            response.message = "The OTP is sent on registered email address"
+            
+        except UserNotFoundException as e:
+            print(f"The entered email id or password may be incorrect")
+            response.errors['email'] = "The entered email id or password may be incorrect"
+            response.success = False
+        except Exception as e:
+            print(f"An exception occured while requesting password reset {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
+        
+        
+    @staticmethod
     def generate_otp(email: str) -> Response:
         response = Response()
         try:
