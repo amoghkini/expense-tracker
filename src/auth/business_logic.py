@@ -1,12 +1,13 @@
 from pydantic import ValidationError
 from typing import Union
 
-from auth.exceptions import IncorrectCredentialsException, IncorrectOTPException, UserNotFoundException
+from auth.exceptions import IncorrectCredentialsException, IncorrectOTPException, OTPTimeoutException, UserNotFoundException
 from auth.models import User
 from auth.data_validator import UserSignUpValidator, ChangePasswordRequestValidator, ResetPasswordValidator
 from auth.utils import Utils, TokenSerializer, OTPUtils
 from utils.flask_utils import get_external_url
 from utils.response_handler import Response
+from utils.time_utils import TimeUtils
 from utils.utils import Utils as CommonUtils
 
 
@@ -32,6 +33,7 @@ class BusinessLogic:
             if user.two_factor_auth:
                 new_otp = OTPUtils.get_otp_object(user).now()
                 print(f"New OTP {new_otp}")       
+                user.otp_sent_time = TimeUtils.get_epoch()
                 response.next_page = 'auth.verify_otp_api'
             else:
                 Utils.login_user(email)
@@ -59,6 +61,7 @@ class BusinessLogic:
             
             new_otp = OTPUtils.get_otp_object(user).now()
             print(f"New OTP {new_otp}")       
+            user.otp_sent_time = TimeUtils.get_epoch()
             response.message = "The OTP is sent on registered email address"
             
         except UserNotFoundException as e:
@@ -73,6 +76,7 @@ class BusinessLogic:
    
     @staticmethod
     def verify_otp(form_data: dict) -> Response:
+        OTP_VALID_DURATION = 3   # This should be from environment variables
         response = Response()
         try:
             email: str = form_data.get('email', '')
@@ -80,7 +84,11 @@ class BusinessLogic:
             user: User = User.get_by_email(email)
             if not user:
                 raise UserNotFoundException
-
+            
+            current_time: int = TimeUtils.get_epoch()
+            if user.otp_sent_time and (current_time - user.otp_sent_time) > OTP_VALID_DURATION:
+                raise OTPTimeoutException(f"The user must enter the OTP within {OTP_VALID_DURATION} seconds")
+            
             if OTPUtils.is_otp_valid(user, otp):
                 print("OTP verified successfully")
                 Utils.login_user(email)
@@ -88,7 +96,7 @@ class BusinessLogic:
             else:
                 raise IncorrectOTPException("The entered OTP is incorrect")
             
-        except IncorrectOTPException as e:
+        except (OTPTimeoutException, IncorrectOTPException) as e:
             print(f"The entered OTP is incorrect")
             response.errors['otp'] = e
             response.success = False

@@ -5,5 +5,10 @@ class UserNotFoundException(Exception):
 class IncorrectCredentialsException(Exception):
     pass
 
+
 class IncorrectOTPException(Exception):
+    pass
+
+
+class OTPTimeoutException(Exception):
     pass
