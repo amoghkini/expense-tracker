@@ -57,9 +57,8 @@ class BusinessLogic:
             if not user:
                 print("The user is not registered in the system")    
             
-            if user.two_factor_auth:
-                new_otp = OTPUtils.get_otp_object(user).now()
-                print(f"New OTP {new_otp}")       
+            new_otp = OTPUtils.get_otp_object(user).now()
+            print(f"New OTP {new_otp}")       
             response.message = "The OTP is sent on registered email address"
             
         except UserNotFoundException as e:
@@ -78,12 +77,11 @@ class BusinessLogic:
         try:
             email: str = form_data.get('email', '')
             otp: str = form_data.get('otp', '')
-            
             user: User = User.get_by_email(email)
             if not user:
                 raise UserNotFoundException
 
-            if user.two_factor_auth and  OTPUtils.is_otp_valid(user, otp):
+            if OTPUtils.is_otp_valid(user, otp):
                 print("OTP verified successfully")
                 Utils.login_user(email)
                 response.message = "User logged in successfully"
@@ -320,11 +318,9 @@ class BusinessLogic:
                 raise UserNotFoundException
             
             if action.lower() == 'enable':
-                user.two_factor_auth = True
-                user.otp_secret = OTPUtils.generate_otp_secret()
+                user.two_factor_auth = True    
             else:    
                 user.two_factor_auth = False
-                user.otp_secret = None
             
         except Exception as e:
             print(f"An exception occured while changing 2fa status {str(e)}")
@@ -341,4 +337,5 @@ class BusinessLogic:
         new_user.mobile_no = form_data.get("mobile_no")
         new_user.password = Utils.generate_hashed_password(form_data.get("password", ''))
         new_user.username = Utils.generate_username(form_data.get("first_name", ''), form_data.get("last_name", ''))
+        new_user.otp_secret = OTPUtils.generate_otp_secret()
         return new_user
