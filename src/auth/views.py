@@ -73,6 +73,8 @@ class AuthVerifyOTP(BaseView):
         self._context["form_data"] = request.form
         email: str = session.pop('email', None)
         self._context["email"]  = email
+        self._context["no_of_attempts"]  = 2
+        self._context["max_attempts"]  = 5
 
         if not email:
             return self.redirect('auth.login_api')

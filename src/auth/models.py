@@ -1,8 +1,10 @@
 from auth.constants import UserStatus
 from database import (
     Boolean,
+    BigInteger,
     Column, 
     DateTime,
+    Integer,
     Model,
     String
 )
@@ -29,6 +31,8 @@ class User(Model):
     last_password_change_date = Column(DateTime(), nullable=True)  
     two_factor_auth = Column(Boolean, default=False)
     otp_secret = Column(String, nullable=True)
+    # otp_sent_time =  Column(BigInteger, nullable=True)
+    # incorrect_login_attempts = Column(Integer, nullable=True)
     transactions = relationship('income_expense_tracker.models.Transactions', backref='email', lazy=True)
     
     @classmethod
