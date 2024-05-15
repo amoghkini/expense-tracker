@@ -12,3 +12,11 @@ class IncorrectOTPException(Exception):
 
 class OTPTimeoutException(Exception):
     pass
+
+
+class MaxLoginAttemptsReachedException(Exception):
+    pass
+
+
+class AccountLockedException(Exception):
+    pass

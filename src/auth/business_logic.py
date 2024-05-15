@@ -1,9 +1,21 @@
 from pydantic import ValidationError
 from typing import Union
 
-from auth.exceptions import IncorrectCredentialsException, IncorrectOTPException, OTPTimeoutException, UserNotFoundException
+from auth.constants import UserStatus
+from auth.exceptions import (
+    AccountLockedException,
+    IncorrectCredentialsException, 
+    IncorrectOTPException, 
+    OTPTimeoutException, 
+    MaxLoginAttemptsReachedException, 
+    UserNotFoundException
+)
 from auth.models import User
-from auth.data_validator import UserSignUpValidator, ChangePasswordRequestValidator, ResetPasswordValidator
+from auth.data_validator import (
+    ChangePasswordRequestValidator, 
+    ResetPasswordValidator,
+    UserSignUpValidator
+)
 from auth.utils import Utils, TokenSerializer, OTPUtils
 from utils.flask_utils import get_external_url
 from utils.response_handler import Response
@@ -17,6 +29,7 @@ class BusinessLogic:
     def process_login(
         form_data: dict
     ) -> Response:
+        MAX_LOGIN_ATTEMPTS = 5
         response = Response()
         try:
             email: str = form_data.get('email', '')
@@ -24,24 +37,34 @@ class BusinessLogic:
             
             user: User = User.get_by_email(email)
             if not user:
-                raise UserNotFoundException
+                raise UserNotFoundException("The entered email id or password may be incorrect")
             
-            if not user.check_password(password):
-                raise IncorrectCredentialsException
-            
-            # To Do: Update last login date 
-            if user.two_factor_auth:
-                new_otp = OTPUtils.get_otp_object(user).now()
-                print(f"New OTP {new_otp}")       
-                user.otp_sent_time = TimeUtils.get_epoch()
-                response.next_page = 'auth.verify_otp_api'
+            if user.status == UserStatus.LOCKED:
+                raise AccountLockedException("The account is locked. Please reset the password to proceed by clicking on forgot password link.")
             else:
-                Utils.login_user(email)
-                response.next_page = 'core.index_api'
-                response.message = "User logged in successfully"
-        except (IncorrectCredentialsException, UserNotFoundException) as e:
-            print(f"The entered email id or password may be incorrect")
-            response.errors['email'] = "The entered email id or password may be incorrect"
+                if not user.check_password(password):
+                    Utils.increment_incorrect_password_attempts(user)
+                    if user.incorrect_password_attempts >= MAX_LOGIN_ATTEMPTS:
+                        user.status = UserStatus.LOCKED
+                        raise MaxLoginAttemptsReachedException("Maxed login attempts reached. Account is locked")
+                    user.commit()
+                    raise IncorrectCredentialsException("The entered email id or password may be incorrect")
+                
+                # To Do: Update last login date 
+                if user.two_factor_auth:
+                    new_otp = OTPUtils.get_otp_object(user).now()
+                    print(f"New OTP {new_otp}")       
+                    user.otp_sent_time = TimeUtils.get_epoch()
+                    response.next_page = 'auth.verify_otp_api'
+                else:
+                    Utils.reset_incorrect_password_attempts(user)
+                    user.commit()
+                    Utils.login_user(email)
+                    response.next_page = 'core.index_api'
+                    response.message = "User logged in successfully"
+        except (IncorrectCredentialsException, UserNotFoundException, MaxLoginAttemptsReachedException, AccountLockedException) as e:
+            print(f"Excption occured in login method {str(e)}")
+            response.errors['email'] = e
             response.success = False
         except Exception as e:
             print(f"An exception occured while login {str(e)}")
@@ -59,14 +82,16 @@ class BusinessLogic:
             if not user:
                 print("The user is not registered in the system")    
             
-            new_otp = OTPUtils.get_otp_object(user).now()
-            print(f"New OTP {new_otp}")       
-            user.otp_sent_time = TimeUtils.get_epoch()
-            response.message = "The OTP is sent on registered email address"
-            
-        except UserNotFoundException as e:
-            print(f"The entered email id or password may be incorrect")
-            response.errors['email'] = "The entered email id or password may be incorrect"
+            if user.status == UserStatus.LOCKED:
+                raise AccountLockedException("The account is locked. Please reset the password to proceed by clicking on forgot password link.")
+            else:
+                new_otp = OTPUtils.get_otp_object(user).now()
+                print(f"New OTP {new_otp}")       
+                user.otp_sent_time = TimeUtils.get_epoch()
+                response.message = "The OTP is sent on registered email address"
+        except AccountLockedException as e:
+            print(e)
+            response.errors['email'] = e
             response.success = False
         except Exception as e:
             print(f"An exception occured while requesting password reset {str(e)}")
@@ -76,27 +101,43 @@ class BusinessLogic:
    
     @staticmethod
     def verify_otp(form_data: dict) -> Response:
-        OTP_VALID_DURATION = 3   # This should be from environment variables
-        response = Response()
+        MAX_OTP_ATTEMPTS = 5
+        OTP_VALID_DURATION = 300   # This should be from environment variables
+
+        response = Response(errors={})
         try:
             email: str = form_data.get('email', '')
             otp: str = form_data.get('otp', '')
             user: User = User.get_by_email(email)
             if not user:
-                raise UserNotFoundException
-            
-            current_time: int = TimeUtils.get_epoch()
-            if user.otp_sent_time and (current_time - user.otp_sent_time) > OTP_VALID_DURATION:
-                raise OTPTimeoutException(f"The user must enter the OTP within {OTP_VALID_DURATION} seconds")
-            
-            if OTPUtils.is_otp_valid(user, otp):
-                print("OTP verified successfully")
-                Utils.login_user(email)
-                response.message = "User logged in successfully"
+                raise UserNotFoundException("The entered email id or password may be incorrect")
+
+            if user.status == UserStatus.LOCKED:
+                raise AccountLockedException("The account is locked. Please reset the password to proceed by clicking on forgot password link.")
             else:
-                raise IncorrectOTPException("The entered OTP is incorrect")
+                current_time: int = TimeUtils.get_epoch()
+                if user.otp_sent_time and (current_time - user.otp_sent_time) > OTP_VALID_DURATION:
+                    raise OTPTimeoutException(f"The user must enter the OTP within {OTP_VALID_DURATION} seconds")
+                
+                    
+                if user.incorrect_otp_attempts >= MAX_OTP_ATTEMPTS:
+                    raise MaxLoginAttemptsReachedException("Maxed login attempts reached. Account is locked")
+                    
+                if OTPUtils.is_otp_valid(user, otp):
+                    print("OTP verified successfully")
+                    user = Utils.reset_incorrect_otp_attempts(user)
+                    user.commit()
+                    Utils.login_user(email)
+                    response.message = "User logged in successfully"
+                else:
+                    user = Utils.increment_incorrect_otp_attempts(user)
+                    if user.incorrect_otp_attempts >= MAX_OTP_ATTEMPTS:
+                        user.status = UserStatus.LOCKED
+                        raise MaxLoginAttemptsReachedException("Maxed login attempts reached. Account is locked")
+                    user.commit()
+                    raise IncorrectOTPException("The entered OTP is incorrect")
             
-        except (OTPTimeoutException, IncorrectOTPException) as e:
+        except (OTPTimeoutException, IncorrectOTPException, MaxLoginAttemptsReachedException, AccountLockedException) as e:
             print(f"The entered OTP is incorrect")
             response.errors['otp'] = e
             response.success = False
@@ -234,7 +275,7 @@ class BusinessLogic:
             
             user: User = User.get_by_email(email)
             if not user:
-                raise UserNotFoundException
+                raise UserNotFoundException("The entered email id or password may be incorrect")
             
             token_serializer = TokenSerializer('amogh')
             verify_token: Union[str, bytes] = token_serializer.generate_token(email)
@@ -245,7 +286,7 @@ class BusinessLogic:
             
         except UserNotFoundException as e:
             print(f"The entered email id or password may be incorrect")
-            response.errors['email'] = "The entered email id or password may be incorrect"
+            response.errors['email'] = e
             response.success = False
         except Exception as e:
             print(f"An exception occured while requesting password reset {str(e)}")
@@ -290,11 +331,14 @@ class BusinessLogic:
             user = User.query.filter_by(email=form_data.get('email')).first()
             if not user:
                 raise UserNotFoundException("The user is not registered in system")
-            
+
             if Utils.check_password_hash(user.password, user_data.new_password):
                 raise IncorrectCredentialsException("New password should not be same as old password!")   
             else:
                 user.password = Utils.generate_hashed_password(user_data.new_password)
+                user.status = UserStatus.CREATED
+                user = Utils.reset_incorrect_password_attempts(user)
+                user = Utils.reset_incorrect_otp_attempts(user)
                 user.commit()
             response.message = "Password reset successfully"
             

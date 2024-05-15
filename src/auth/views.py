@@ -75,7 +75,8 @@ class AuthVerifyOTP(BaseView):
         self._context["email"]  = email
         self._context["no_of_attempts"]  = 2
         self._context["max_attempts"]  = 5
-
+        # Need to connect to db to get noof attempts
+        # During this time, we can have verification of account status is locked
         if not email:
             return self.redirect('auth.login_api')
         return self.render()
@@ -84,6 +85,7 @@ class AuthVerifyOTP(BaseView):
 
         self._context["errors"] = {}
         form_data: dict = request.form.to_dict()
+        self._context["email"]  = form_data.get('email')
         response_handler: Response = BusinessLogic.verify_otp(form_data)
         
         if response_handler.success:
@@ -275,7 +277,7 @@ class AuthProfileResetPassword(BaseView):
             if response_handler.message:
                 self.success(response_handler.message)
             self._context["errors"] = {}
-            return self.redirect('core.index_api')
+            return self.redirect('auth.login_api')
         else:
             if response_handler.message:
                 print(response_handler.message)
