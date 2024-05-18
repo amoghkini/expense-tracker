@@ -54,7 +54,9 @@ class BusinessLogic:
                     user.commit()
                     raise IncorrectCredentialsException("The entered email id or password may be incorrect")
 
-                # To Do: Update last login date 
+                # Update last login date 
+                user.last_login_time = TimeUtils.get_epoch()
+                
                 if user.two_factor_auth:
                     if user.otp_secret:
                         hashed_otp = OTPUtils.get_otp_object(user)
@@ -65,10 +67,10 @@ class BusinessLogic:
                         raise InvalidOTPSecretKeyException("Something went wrong while generating OTP.")
                 else:
                     Utils.reset_incorrect_password_attempts(user)
-                    user.commit()
                     Utils.login_user(email)
                     response.next_page = 'core.index_api'
                     response.message = "User logged in successfully"
+                user.commit()
         except (IncorrectCredentialsException, UserNotFoundException, MaxLoginAttemptsReachedException, AccountLockedException, InvalidOTPSecretKeyException) as e:
             print(f"Excption occured in login method {str(e)}")
             response.errors['email'] = e

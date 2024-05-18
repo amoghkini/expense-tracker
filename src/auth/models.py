@@ -22,7 +22,7 @@ class User(Model):
     password = Column(String, nullable=True)
     mobile_no = Column(String(50), unique=True, nullable=False)
     status =  Column(String(50), default=UserStatus.CREATED)
-    last_login_time = Column(DateTime(), nullable=True)  
+    last_login_time = Column(BigInteger, nullable=True)  
     profile_pic = Column(String, nullable=True)
     date_of_birth = Column(DateTime(), nullable=True)
     address_line1 = Column(String, nullable=True)
