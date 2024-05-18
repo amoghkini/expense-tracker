@@ -34,7 +34,7 @@ class User(Model):
     otp_sent_time =  Column(BigInteger, nullable=True)
     incorrect_password_attempts = Column(Integer, nullable=True, default=0)
     incorrect_otp_attempts = Column(Integer, nullable=True, default=0)
-    transactions = relationship('income_expense_tracker.models.Transactions', backref='email', lazy=True)
+    # transactions = relationship('income_expense_tracker.models.Transactions', backref='email', lazy=True)
     
     @classmethod
     def get_by_email(cls, email):
