@@ -2,6 +2,7 @@ from auth import auth
 from auth.views import (
     AuthManageTwoFactorAuth,
     AuthLoginView,
+    AuthLoginWithOTPView,
     AuthLogOutView,
     AuthProfileView,
     AuthProfileSecurity,
@@ -24,6 +25,7 @@ routes = [
             ('/forgot-password-confirmation', 'forgot_password_confirmation_api', AuthProfileForgotPasswordConfirmation),
             ('/forgot-password-request', 'forgot_password_request_api', AuthProfileForgotPasswordRequest),
             ('/login', 'login_api', AuthLoginView),
+            ('/login-with-otp', 'login_with_otp_api', AuthLoginWithOTPView),
             ('/logout', 'logout_api', AuthLogOutView),
             ('/profile', 'profile_api', AuthProfileView),
             ('/profile-settings', 'profile_settings_api', AuthProfileSettingsView),

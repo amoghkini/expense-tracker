@@ -49,6 +49,26 @@ class Utils:
         """Custom Validator"""
         return True if re.match(regex, data) else False
     
+    @staticmethod
+    def increment_incorrect_password_attempts(user):
+        user.incorrect_password_attempts += 1
+        return user
+    
+    @staticmethod
+    def increment_incorrect_otp_attempts(user):
+        user.incorrect_otp_attempts += 1
+        return user
+    
+    @staticmethod 
+    def reset_incorrect_password_attempts(user):
+        user.incorrect_password_attempts = 0
+        return user
+    
+    @staticmethod 
+    def reset_incorrect_otp_attempts(user):
+        user.incorrect_otp_attempts = 0
+        return user
+    
     def __str__(self) -> str:
         return "This is utility function for auth blueprint"
 

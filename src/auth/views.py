@@ -24,8 +24,8 @@ class AuthLoginView(BaseView):
             if response_handler.message:
                 self.success(response_handler.message)
             self._context["errors"] = {}
-            next_page = request.args.get('next_page')
             session['email'] = form_data.get('email')
+            next_page = request.args.get('next_page')
             if next_page:
                 return self.redirect(response_handler.next_page, next_page=next_page)
             return self.redirect(response_handler.next_page)
@@ -37,6 +37,34 @@ class AuthLoginView(BaseView):
             return self.render()
     
 
+class AuthLoginWithOTPView(BaseView):
+    _template = 'login_with_otp.html'
+    
+    def get(self):
+        self._context["errors"] = {}
+        self._context["form_data"] = request.form
+        return self.render()
+    
+    def post(self):
+        form_data: dict = request.form.to_dict()
+        response_handler: Response = BusinessLogic.login_with_otp(form_data)
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+            session['email'] = form_data.get('email')
+            self._context["errors"] = {}
+            next_page = request.args.get('next_page')
+            if next_page:
+                return self.redirect('auth.verify_otp_api', next_page=next_page)
+            return self.redirect('auth.verify_otp_api')
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
+            self._context["errors"] = response_handler.errors
+            self._context["form_data"] = request.form
+            return self.render()
+        
+        
 class AuthVerifyOTP(BaseView):
     _template: str = 'verify_otp.html'
     
@@ -45,24 +73,21 @@ class AuthVerifyOTP(BaseView):
         self._context["form_data"] = request.form
         email: str = session.pop('email', None)
         self._context["email"]  = email
-
+        
+        # Need to connect to db to get noof attempts
+        # During this time, we can have verification of account status is locked
         if not email:
             return self.redirect('auth.login_api')
-            
-        response_handler: Response = BusinessLogic.generate_otp(email)
-        if response_handler.success:
-            if response_handler.message:
-                self.success(response_handler.message)
-        else:
-            if response_handler.message:
-                self.warning(response_handler.message)
-            self._context["errors"] = response_handler.errors
+        response_handler: Response = BusinessLogic.pre_verify_otp_checks(email)
+        self._context["no_of_attempts"]  = response_handler.data.get('no_of_attempts')
+        self._context["max_attempts"]  = response_handler.data.get('max_attempts')
         return self.render()
     
     def post(self):
 
         self._context["errors"] = {}
         form_data: dict = request.form.to_dict()
+        self._context["email"]  = form_data.get('email')
         response_handler: Response = BusinessLogic.verify_otp(form_data)
         
         if response_handler.success:
@@ -74,6 +99,8 @@ class AuthVerifyOTP(BaseView):
                 return self.redirect(next_page)
             return self.redirect('core.index_api')
         else:
+            self._context["no_of_attempts"]  = response_handler.data.get('no_of_attempts')
+            self._context["max_attempts"]  = response_handler.data.get('max_attempts')
             if response_handler.message:
                 self.warning(response_handler.message)
             self._context["errors"] = response_handler.errors
@@ -254,7 +281,7 @@ class AuthProfileResetPassword(BaseView):
             if response_handler.message:
                 self.success(response_handler.message)
             self._context["errors"] = {}
-            return self.redirect('core.index_api')
+            return self.redirect('auth.login_api')
         else:
             if response_handler.message:
                 print(response_handler.message)

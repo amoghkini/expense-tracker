@@ -10,6 +10,7 @@ class BaseEnum(StrEnum):
 class UserStatus(BaseEnum):
     CREATED = auto()
     ACTIVATED = auto()
+    LOCKED = auto()
     DEACTIVATED = auto()
     DELETED = auto()
     TERMINATED = auto()
