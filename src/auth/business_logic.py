@@ -6,11 +6,15 @@ from auth.exceptions import (
     AccountLockedException,
     IncorrectCredentialsException, 
     IncorrectOTPException, 
+    InvalidOTPSecretKeyException,
     OTPTimeoutException, 
     MaxLoginAttemptsReachedException, 
     UserNotFoundException
 )
-from auth.models import User
+from auth.models import (
+    User, 
+    UserOTP
+)
 from auth.data_validator import (
     ChangePasswordRequestValidator, 
     ResetPasswordValidator,
@@ -49,20 +53,23 @@ class BusinessLogic:
                         raise MaxLoginAttemptsReachedException("Maxed login attempts reached. Account is locked")
                     user.commit()
                     raise IncorrectCredentialsException("The entered email id or password may be incorrect")
-                
+
                 # To Do: Update last login date 
                 if user.two_factor_auth:
-                    new_otp = OTPUtils.get_otp_object(user).now()
-                    print(f"New OTP {new_otp}")       
-                    user.otp_sent_time = TimeUtils.get_epoch()
-                    response.next_page = 'auth.verify_otp_api'
+                    if user.otp_secret:
+                        hashed_otp = OTPUtils.get_otp_object(user)
+                        otp = UserOTP(user_id=user.id, hashed_otp=hashed_otp, otp_timestamp=TimeUtils.get_epoch())
+                        otp.save(commit=True)
+                        response.next_page = 'auth.verify_otp_api'
+                    else:
+                        raise InvalidOTPSecretKeyException("Something went wrong while generating OTP.")
                 else:
                     Utils.reset_incorrect_password_attempts(user)
                     user.commit()
                     Utils.login_user(email)
                     response.next_page = 'core.index_api'
                     response.message = "User logged in successfully"
-        except (IncorrectCredentialsException, UserNotFoundException, MaxLoginAttemptsReachedException, AccountLockedException) as e:
+        except (IncorrectCredentialsException, UserNotFoundException, MaxLoginAttemptsReachedException, AccountLockedException, InvalidOTPSecretKeyException) as e:
             print(f"Excption occured in login method {str(e)}")
             response.errors['email'] = e
             response.success = False
@@ -85,11 +92,15 @@ class BusinessLogic:
                 if user.status == UserStatus.LOCKED:
                     raise AccountLockedException("The account is locked. Please reset the password to proceed by clicking on forgot password link.")
                 else:
-                    new_otp = OTPUtils.get_otp_object(user).now()
-                    print(f"New OTP {new_otp}")       
-                    user.otp_sent_time = TimeUtils.get_epoch()
+                    if user.otp_secret:
+                        hashed_otp = OTPUtils.get_otp_object(user)
+                        
+                        otp = UserOTP(user_id=user.id, hashed_otp=hashed_otp, otp_timestamp=TimeUtils.get_epoch())
+                        otp.save(commit=True)
+                    else:
+                        raise InvalidOTPSecretKeyException("Something went wrong while generating OTP.")
             response.message = "The OTP is sent on registered email address"
-        except AccountLockedException as e:
+        except (AccountLockedException, InvalidOTPSecretKeyException) as e:
             print(e)
             response.errors['email'] = e
             response.success = False
@@ -151,18 +162,29 @@ class BusinessLogic:
             if user.status == UserStatus.LOCKED:
                 raise AccountLockedException("The account is locked. Please reset the password to proceed by clicking on forgot password link.")
             else:
-                current_time: int = TimeUtils.get_epoch()
-                if user.otp_sent_time and (current_time - user.otp_sent_time) > OTP_VALID_DURATION:
-                    raise OTPTimeoutException(f"The user must enter the OTP within {OTP_VALID_DURATION} seconds")
                 
-                    
                 if user.incorrect_otp_attempts >= MAX_OTP_ATTEMPTS:
                     raise MaxLoginAttemptsReachedException("Maxed login attempts reached. Account is locked")
-                    
-                if OTPUtils.is_otp_valid(user, otp):
+                
+                otp_entry: UserOTP = UserOTP.query.filter_by(user_id=user.id).order_by(UserOTP.id.desc()).first()
+                if not otp_entry:
+                    print("The valid OTP entry is not found")
+                    raise IncorrectOTPException("The entered OTP is incorrect.")
+                
+                current_time: int = TimeUtils.get_epoch()
+                if otp_entry.otp_timestamp and (current_time - otp_entry.otp_timestamp) > OTP_VALID_DURATION:
+                    raise OTPTimeoutException(f"The user must enter the OTP within {OTP_VALID_DURATION} seconds")
+                
+                if OTPUtils.is_otp_valid(otp_entry, otp):
                     print("OTP verified successfully")
+                    # Reset incorect OTP count
                     user = Utils.reset_incorrect_otp_attempts(user)
                     user.commit()
+                    
+                    # Delete OTP entry from database
+                    otp_entry.delete(commit=True)
+                    
+                    # Add data to session
                     Utils.login_user(email)
                     response.message = "User logged in successfully"
                 else:

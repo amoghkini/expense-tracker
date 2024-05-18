@@ -9,6 +9,7 @@ from database import (
     String
 )
 from auth.utils import Utils
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref
 
 
@@ -31,9 +32,9 @@ class User(Model):
     last_password_change_date = Column(DateTime(), nullable=True)  
     two_factor_auth = Column(Boolean, default=False)
     otp_secret = Column(String, nullable=True)
-    otp_sent_time =  Column(BigInteger, nullable=True)
     incorrect_password_attempts = Column(Integer, nullable=True, default=0)
     incorrect_otp_attempts = Column(Integer, nullable=True, default=0)
+    otps = relationship('auth.models.UserOTP', backref='user', lazy=True)
     # transactions = relationship('income_expense_tracker.models.Transactions', backref='email', lazy=True)
     
     @classmethod
@@ -67,3 +68,10 @@ class User(Model):
 
     def __repr__(self) -> str:
         return f'User<{self.email} {self.first_name}>'
+    
+
+class UserOTP(Model):
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    hashed_otp = Column(String(60), nullable=False)
+    otp_timestamp = Column(BigInteger, nullable=False)

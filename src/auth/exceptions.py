@@ -20,3 +20,7 @@ class MaxLoginAttemptsReachedException(Exception):
 
 class AccountLockedException(Exception):
     pass
+
+
+class InvalidOTPSecretKeyException(Exception):
+    pass
