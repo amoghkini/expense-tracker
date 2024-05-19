@@ -64,7 +64,7 @@ class TimeUtils:
         Note:
         - If `date_time_obj` is not provided, the method uses the current datetime.
         """
-        if date_time_obj:
+        if not date_time_obj:
             date_time_obj = datetime.now()
         date_time_obj = date_time_obj.replace(hour=hours, minute=minutes, second=seconds, microsecond=0)
         return date_time_obj

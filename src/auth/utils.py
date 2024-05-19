@@ -1,3 +1,4 @@
+import bcrypt
 import pyotp
 import re
 from itsdangerous import URLSafeTimedSerializer
@@ -145,24 +146,15 @@ class OTPUtils:
         return pyotp.random_base32()
     
     @staticmethod
-    def get_otp_object(user) -> pyotp.TOTP:
-        """
-        Get a TOTP (Time-based One-Time Password) object for the specified user.
-
-        Args:
-            user (User): The user for whom the OTP object is retrieved.
-
-        Returns:
-            pyotp.TOTP: A TOTP object initialized with the user's OTP secret.
-
-        Raises:
-            ValueError: If the user does not have an OTP secret.
-        """
+    def get_otp_object(user) -> bytes:
         secret: str = user.otp_secret  
-        return pyotp.TOTP(secret)
+        otp: str = pyotp.TOTP(secret).now()
+        print(f"New OTP {otp}")
+        hashed_otp: bytes = bcrypt.hashpw(otp.encode('utf-8'), bcrypt.gensalt())
+        return hashed_otp
     
     @staticmethod
-    def is_otp_valid(user, otp: str) -> bool:
+    def is_otp_valid(otp_entry, otp: str) -> bool:
         """
         Verify if the provided OTP is valid for the specified user.
 
@@ -177,5 +169,5 @@ class OTPUtils:
             ValueError: If the user does not have an OTP secret.
         """
         
-        otp_object = OTPUtils.get_otp_object(user)
-        return otp_object.verify(otp)
+        is_valid = bcrypt.checkpw(otp.encode('utf-8'), otp_entry.hashed_otp)
+        return is_valid

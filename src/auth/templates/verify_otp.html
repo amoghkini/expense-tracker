@@ -54,9 +54,15 @@
                 
 
                 <p id="timerDisplay">{% if no_of_attempts == -1 %}  {% else %} {{no_of_attempts}}/{{max_attempts}} attempts{%endif %}</p>
-                <p id="resendText">Didn't receive the OTP? <a id="resendLink" href="{{ url_for('auth.forgot_password_request_api') }}" class="disabled">Resend</a></p>
+                <p id="resendText">Didn't receive the OTP? <a id="resendLink" href="javascript:void(0);"
+                        onclick="resendOtp()">Resend</a></p>
             </div>
             <p class="mt-5 mb-3 text-muted">© 2024</p>
+        </form>
+        <!-- Hidden form for resending OTP -->
+        <form id="resendOtpForm" action="{{ url_for('auth.resend_otp_api') }}" method="POST"
+            style="display: none;">
+            <input type="hidden" name="email" value="{{email}}">
         </form>
     </div>
 </div>
@@ -65,6 +71,10 @@
 
 {% block additional_js %}
 <script>
+    function resendOtp() {
+            document.getElementById('resendOtpForm').submit();
+        }
+
     document.addEventListener("DOMContentLoaded", function () {
         // Get the timer element
         var timerElement = document.getElementById('timer');
