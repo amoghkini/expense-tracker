@@ -24,3 +24,7 @@ class AccountLockedException(Exception):
 
 class InvalidOTPSecretKeyException(Exception):
     pass
+
+
+class MaxResendOTPLimitReached(Exception):
+    pass

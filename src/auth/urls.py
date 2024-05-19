@@ -12,6 +12,7 @@ from auth.views import (
     AuthProfileForgotPasswordConfirmation,
     AuthProfileResetPassword,
     AuthProfileChangePassword,
+    AuthResendOTPView,
     AuthSignUpView,
     AuthVerifyOTP
 )
@@ -32,6 +33,7 @@ routes = [
             ('/profile-security', 'profile_security_api', AuthProfileSecurity),
             ('/profile-notifications-settings', 'profile_notifications_settings_api', AuthProfileNotificationsSettings),
             ('/reset-password', 'reset_password_api', AuthProfileResetPassword),
+            ('/resend-otp', 'resend_otp_api', AuthResendOTPView),
             ('/signup', 'signup_api', AuthSignUpView),
             ('/verify-otp', 'verify_otp_api', AuthVerifyOTP),
     )

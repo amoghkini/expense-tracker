@@ -63,8 +63,29 @@ class AuthLoginWithOTPView(BaseView):
             self._context["errors"] = response_handler.errors
             self._context["form_data"] = request.form
             return self.render()
-        
-        
+      
+    
+class AuthResendOTPView(BaseView):
+    _template = 'verify_otp.html'
+    
+    def post(self):
+        form_data: dict = request.form.to_dict()
+        response_handler: Response = BusinessLogic.resend_otp(form_data)
+        if response_handler.success:
+            if response_handler.message:
+                self.success(response_handler.message)
+            self._context["errors"] = {}
+            self._context["form_data"] = request.form
+        else:
+            if response_handler.message:
+                self.warning(response_handler.message)
+            self._context["errors"] = response_handler.errors
+            self._context["form_data"] = request.form
+        self._context["no_of_attempts"]  = response_handler.data.get('no_of_attempts')
+        self._context["max_attempts"]  = response_handler.data.get('max_attempts')
+        return self.render()
+    
+    
 class AuthVerifyOTP(BaseView):
     _template: str = 'verify_otp.html'
     
@@ -74,8 +95,6 @@ class AuthVerifyOTP(BaseView):
         email: str = session.pop('email', None)
         self._context["email"]  = email
         
-        # Need to connect to db to get noof attempts
-        # During this time, we can have verification of account status is locked
         if not email:
             return self.redirect('auth.login_api')
         response_handler: Response = BusinessLogic.pre_verify_otp_checks(email)
@@ -106,6 +125,7 @@ class AuthVerifyOTP(BaseView):
             self._context["errors"] = response_handler.errors
             self._context["form_data"] = request.form
             return self.render()
+   
     
 class AuthLogOutView(BaseView):
     
