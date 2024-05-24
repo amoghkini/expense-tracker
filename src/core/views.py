@@ -18,3 +18,10 @@ class AboutView(BaseView):
 
     def get(self):
         return self.render()
+    
+    
+class WorkInProgressView(BaseView):
+    _template = 'yet_to_implement.html'
+
+    def get(self):
+        return self.render()

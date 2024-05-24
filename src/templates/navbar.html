@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white flex-row border-bottom shadow">
     <div class="container-fluid">
-        <a class="navbar-brand mx-lg-1 mr-0" href="./index.html">
+        <a class="navbar-brand mx-lg-1 mr-0" href="{{ url_for('core.index_api') }}"> 
             <svg version="1.1" id="logo" class="navbar-brand-img brand-sm" xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 120 120" xml:space="preserve">
                 <g>
@@ -13,17 +13,17 @@
         <button class="navbar-toggler mt-2 mr-auto toggle-sidebar text-muted">
             <i class="fe fe-menu navbar-toggler-icon"></i>
         </button>
-        <div class="navbar-slide bg-white ml-lg-4" id="navbarSupportedContent">
+        <div class="navbar-slide bg-white ml-lg-4" id="navbarSupposssrtedContent">
             <a href="#" class="btn toggle-sidebar d-lg-none text-muted ml-2 mt-3" data-toggle="toggle">
                 <i class="fe fe-x"><span class="sr-only"></span></i>
             </a>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="widgets.html">
+                    <a class="nav-link" href="{{ url_for('core.work_in_progress_api') }}">
                         <span class="ml-lg-2">Admin</span>
                         <span class="badge badge-pill badge-primary">New</span>
                     </a>
-                </li>
+                </li>ss
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('income_expense_tracker.transactions_api') }}">
                         <span class="ml-lg-2">Transactions</span>
@@ -39,8 +39,8 @@
                         <a class="nav-link pl-lg-2" href="{{ url_for('income_expense_tracker.add_income_api') }}"><span class="ml-1">Add Income</span></a>
                         <a class="nav-link pl-lg-2" href="{{ url_for('income_expense_tracker.add_expense_api') }}"><span class="ml-1">Add Expense</span></a>
                         <a class="nav-link pl-lg-2" href="{{ url_for('income_expense_tracker.transactions_api') }}"><span class="ml-1">Transactions</span></a>
-                        <a class="nav-link pl-lg-2" href="./form_layouts.html"><span class="ml-1">Groups</span></a>
-                        <a class="nav-link pl-lg-2" href="./form_upload.html"><span class="ml-1">Smart Analyzer</span></a>
+                        <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Groups</span></a>
+                        <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Smart Analyzer</span></a>
                     </div>
                 </li>
                 <li class="nav-item dropdown">
@@ -49,26 +49,26 @@
                         <span class="ml-lg-2">Accounts</span>
                     </a>
                     <div class="dropdown-menu" aria-labelledby="tablesDropdown">
-                        <a class="nav-link pl-lg-2" href="./table_basic.html"><span class="ml-1">Saving</span></a>
-                        <a class="nav-link pl-lg-2" href="./table_advanced.html"><span class="ml-1">Fix Deposit</span></a>
-                        <a class="nav-link pl-lg-2" href="./table_datatables.html"><span class="ml-1">Recurring Deposit</span></a>
-                        <a class="nav-link pl-lg-2" href="./table_datatables.html"><span class="ml-1">Cash</span></a>
+                        <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Saving</span></a>
+                        <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Fix Deposit</span></a>
+                        <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Recurring Deposit</span></a>
+                        <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Cash</span></a>
                     </div>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="dropdown-toggle nav-link pl-lg-3" href="#" id="chartsDropdown" role="button"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Cards </a>
                     <ul class="dropdown-menu" aria-labelledby="chartsDropdown">
-                        <a class="nav-link pl-lg-2" href="./chart-inline.html"><span class="ml-1">Debit</span></a>
-                        <a class="nav-link pl-lg-2" href="./chart-chartjs.html"><span class="ml-1">Credit</span></a>
+                        <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Debit</span></a>
+                        <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Credit</span></a>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="dropdown-toggle nav-link pl-lg-3" href="#" id="chartsDropdown" role="button" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false"> Wallets </a>
                     <ul class="dropdown-menu" aria-labelledby="chartsDropdown">
-                        <a class="nav-link pl-lg-2" href="./chart-inline.html"><span class="ml-1">Amazon</span></a>
-                        <a class="nav-link pl-lg-2" href="./chart-chartjs.html"><span class="ml-1">Paytm</span></a>
+                        <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Amazon</span></a>
+                        <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Paytm</span></a>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
@@ -76,12 +76,12 @@
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Apps </a>
                     <ul class="dropdown-menu" aria-labelledby="appsDropdown">
                         <li class="nav-item">
-                            <a class="nav-link pl-lg-2" href="./calendar.html">
+                            <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}">
                                 <span class="ml-1">Calendar</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link pl-lg-2" href="./calendar.html">
+                            <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}">
                                 <span class="ml-1">Notifications</span>
                             </a>
                         </li>
@@ -91,8 +91,8 @@
                                 <span class="ml-1">My Activity</span>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="contactDropdown">
-                                <a class="nav-link pl-lg-2" href="./contacts-list.html"><span class="ml-1">Summary</span></a>
-                                <a class="nav-link pl-lg-2" href="./contacts-grid.html"><span class="ml-1">Activity</span></a>
+                                <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Summary</span></a>
+                                <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Activity</span></a>
                             </ul>
                         </li>
                     </ul>
@@ -109,13 +109,13 @@
                                 <span class="ml-1">Contact</span>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="pagesDropdown">
-                                <a class="nav-link pl-lg-2" href="./page-orders.html">
+                                <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}">
                                     <span class="ml-1">Contact Us</span>
                                 </a>
-                                <a class="nav-link pl-lg-2" href="./page-timeline.html">
+                                <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}">
                                     <span class="ml-1">About Us</span>
                                 </a>
-                                <a class="nav-link pl-lg-2" href="./page-invoice.html">
+                                <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}">
                                     <span class="ml-1">Tech Stack</span>
                                 </a>
                             </ul>
@@ -126,10 +126,10 @@
                                 <span class="ml-1">Layouts</span>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="layoutsDropdown">
-                                <a class="nav-link pl-lg-2" href="./index.html"><span class="ml-1">Default</span></a>
-                                <a class="nav-link pl-lg-2" href="./index-horizontal.html"><span class="ml-1">Top
+                                <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Default</span></a>
+                                <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span class="ml-1">Top
                                         Navigation</span></a>
-                                <a class="nav-link pl-lg-2" href="./index-boxed.html"><span
+                                <a class="nav-link pl-lg-2" href="{{ url_for('core.work_in_progress_api') }}"><span
                                         class="ml-1">Boxed</span></a>
                             </ul>
                         </li>
