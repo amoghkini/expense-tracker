@@ -7,6 +7,7 @@ from werkzeug.utils import import_string, find_modules
 from config.settings import get_config, BaseConfig, get_server_helper_config_from_yaml
 from main.app_life_cycle import AppLifeCycle
 from main.baseview import is_verbose
+from main.error_handler import ErrorHandler
 from main.exceptions import (
     NoContextProcessorException, 
     NoExtensionException, 
@@ -62,6 +63,12 @@ class AppFactory(object):
         lifecycle_manager.register_after_request()
         lifecycle_manager.register_teardown_appcontext()
         
+        error_handler_manager = ErrorHandler(self.app)
+        error_handler_manager.register_400_error()
+        error_handler_manager.register_403_error()
+        error_handler_manager.register_404_error()
+        error_handler_manager.register_405_error()
+        error_handler_manager.register_500_error()
         return self.app
     
     def __server_bootup_operations(self):
