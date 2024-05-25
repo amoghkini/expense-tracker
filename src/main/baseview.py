@@ -4,6 +4,7 @@ from flask.views import MethodView
 from flask import flash, jsonify, make_response, redirect, render_template, url_for, current_app, request, Flask
 from inflection import pluralize
 from wtforms.form import FormMeta
+from typing import Any, Optional, Type, Union
 
 
 is_verbose = lambda: os.environ.get('VERBOSE') and True or False
@@ -22,22 +23,29 @@ class classproperty(object):
     
     
 class Flasher(object):
-    DEFAULT_CATEGORY = 'info'
-    DARK_CLASS = 'dark'
-    DANGER_CLASS = 'danger'
-    INFO_CLASS = 'info'
-    LIGHT_CLASS = 'light'
-    SUCCESS_CLASS = 'success'
-    WARNING_CLASS = 'warning'
+    DEFAULT_CATEGORY: str = 'info'
+    DARK_CLASS: str = 'dark'
+    DANGER_CLASS: str = 'danger'
+    INFO_CLASS: str = 'info'
+    LIGHT_CLASS: str = 'light'
+    SUCCESS_CLASS: str = 'success'
+    WARNING_CLASS: str = 'warning'
 
-    def __init__(self,default=None,class_map=None):
+    def __init__(
+        self, 
+        default: Optional[str] = None, 
+        class_map: Optional[dict[str, str]] = None
+    ) -> None:
         if default:
             self.DEFAULT_CATEGORY = default
         if class_map:
             self._set_classes(class_map)
 
-    def _set_classes(self,class_map):
-        default_map = {
+    def _set_classes(
+        self, 
+        class_map: dict[str, str]
+    ) -> None:
+        DEFAULT_MAP = {
             'dark': self.DARK_CLASS,
             'danger': self.DANGER_CLASS,
             'info': self.INFO_CLASS,
@@ -48,29 +56,29 @@ class Flasher(object):
         for k in class_map:
             tmp = class_map.get(k)
             if tmp is not None:
-                default_map[k] = tmp
+                DEFAULT_MAP[k] = tmp
 
-    def flash(self,msg,cat=None):
+    def flash(self, msg: str, cat: Optional[str] = None):
         cat = cat or self.DEFAULT_CATEGORY
-        return flash(msg,cat)
+        return flash(msg, cat)
 
-    def add_dark(self, msg):
+    def add_dark(self, msg: str):
         return self.flash(msg, self.DARK_CLASS)
     
-    def add_danger(self,msg):
-        return self.flash(msg,self.DANGER_CLASS)
+    def add_danger(self, msg: str):
+        return self.flash(msg, self.DANGER_CLASS)
     
-    def add_info(self,msg):
-        return self.flash(msg,self.INFO_CLASS)
+    def add_info(self, msg: str):
+        return self.flash(msg, self.INFO_CLASS)
     
-    def add_light(self,msg):
-        return self.flash(msg,self.LIGHT_CLASS)
+    def add_light(self, msg: str):
+        return self.flash(msg, self.LIGHT_CLASS)
     
-    def add_success(self,msg):
-        return self.flash(msg,self.SUCCESS_CLASS)
+    def add_success(self, msg: str):
+        return self.flash(msg, self.SUCCESS_CLASS)
     
-    def add_warning(self,msg):
-        return self.flash(msg,self.WARNING_CLASS)
+    def add_warning(self, msg: str):
+        return self.flash(msg, self.WARNING_CLASS)
 
 
 class PostViewAddon(object):
@@ -79,44 +87,40 @@ class PostViewAddon(object):
 
 
 class BaseView(MethodView):
-    _template = None
-    _form = None
-    _context = {}
-    _form_obj = None
-    _obj_id = None
-    _form_args = {}
-    _default_view_routes = {}
-    _flasher = None
-    _flasher_class_map = None
+    _template: Optional[str] = None
+    _form: Optional[Union[FormMeta, Any]] = None
+    _context: dict[str, Any] = {}
+    _form_obj: Optional[Any] = None
+    _obj_id: Optional[int] = None
+    _form_args: dict[str, Any] = {}
+    _default_view_routes: dict[str, str] = {}
+    _flasher_class_map: Optional[dict[str, str]] = None
 
-    def __init__(self,*args,**kwargs):
-        super(BaseView,self).__init__(*args,**kwargs)
-        if self._flasher_class_map is not None:
-            self._flasher: Flasher = Flasher(class_map=self._flasher_class_map)
-        else:
-            self._flasher = Flasher()
+    def __init__(self, *args, **kwargs):
+        super(BaseView, self).__init__(*args, **kwargs)
+        self._flasher = Flasher(class_map=self._flasher_class_map) if self._flasher_class_map else Flasher()
 
-    def flash(self,msg):
-        return self.flasher.flash(msg)
+    def flash(self, msg: str):
+        return self._flasher.flash(msg)
 
-    def dark(self, msg):
+    def dark(self, msg: str):
         return self._flasher.add_dark(msg)
     
-    def danger(self, msg):
+    def danger(self, msg: str):
         return self._flasher.add_danger(msg)
     
-    def info(self,msg):
+    def info(self, msg: str):
         return self._flasher.add_info(msg)
     
-    def light(self, msg):
+    def light(self, msg: str):
         return self._flasher.add_light(msg)
     
-    def success(self,msg):
+    def success(self, msg: str):
         return self._flasher.add_success(msg)
 
-    def warning(self,msg):
+    def warning(self, msg: str):
         return self._flasher.add_warning(msg)
-
+    
     @classmethod
     def _add_default_routes(
         cls,
@@ -157,10 +161,10 @@ class BaseView(MethodView):
                 self._form.__dict__[f].data = v
         return render_template(self._template,**self._context)
 
-    def redirect(self,endpoint,**kwargs):
-        if not kwargs.pop('raw',False):
-            return redirect(url_for(endpoint,**kwargs))
-        return redirect(endpoint,**kwargs)
+    def redirect(self, endpoint: str, **kwargs: Any):
+        if not kwargs.pop('raw', False):
+            return redirect(url_for(endpoint, **kwargs))
+        return redirect(endpoint, **kwargs)
         
     def form_validated(self):
         if self._form:
@@ -179,11 +183,11 @@ class BaseView(MethodView):
             result[name] = field.data
         return result
     
-    def get_env(self):
+    def get_env(self) -> Any:
         return current_app.create_jinja_environment()
     
     @property
-    def flasher(self):
+    def flasher(self) -> Flasher:
         return self._flasher
 
 
