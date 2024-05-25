@@ -24,12 +24,14 @@ class classproperty(object):
     
 class Flasher(object):
     DEFAULT_CATEGORY: str = 'info'
-    DARK_CLASS: str = 'dark'
+    PRIMARY_CLASS: str = 'primary'
+    SECONDARY_CLASS: str = 'secondary'
+    SUCCESS_CLASS: str = 'success'
     DANGER_CLASS: str = 'danger'
+    WARNING_CLASS: str = 'warning'
     INFO_CLASS: str = 'info'
     LIGHT_CLASS: str = 'light'
-    SUCCESS_CLASS: str = 'success'
-    WARNING_CLASS: str = 'warning'
+    DARK_CLASS: str = 'dark'
 
     def __init__(
         self, 
@@ -46,12 +48,14 @@ class Flasher(object):
         class_map: dict[str, str]
     ) -> None:
         DEFAULT_MAP = {
-            'dark': self.DARK_CLASS,
+            'primary': self.PRIMARY_CLASS,
+            'secondary': self.SECONDARY_CLASS,
+            'success':self.SUCCESS_CLASS,
             'danger': self.DANGER_CLASS,
+            'warning':self.WARNING_CLASS,
             'info': self.INFO_CLASS,
             'light': self.LIGHT_CLASS,
-            'success':self.SUCCESS_CLASS,
-            'warning':self.WARNING_CLASS
+            'dark': self.DARK_CLASS
         }
         for k in class_map:
             tmp = class_map.get(k)
@@ -62,11 +66,20 @@ class Flasher(object):
         cat = cat or self.DEFAULT_CATEGORY
         return flash(msg, cat)
 
-    def add_dark(self, msg: str):
-        return self.flash(msg, self.DARK_CLASS)
+    def add_primary(self, msg: str):
+        return self.flash(msg, self.PRIMARY_CLASS)
+    
+    def add_secondary(self, msg: str):
+        return self.flash(msg, self.SECONDARY_CLASS)
+    
+    def add_success(self, msg: str):
+        return self.flash(msg, self.SUCCESS_CLASS)
     
     def add_danger(self, msg: str):
         return self.flash(msg, self.DANGER_CLASS)
+    
+    def add_warning(self, msg: str):
+        return self.flash(msg, self.WARNING_CLASS)
     
     def add_info(self, msg: str):
         return self.flash(msg, self.INFO_CLASS)
@@ -74,13 +87,10 @@ class Flasher(object):
     def add_light(self, msg: str):
         return self.flash(msg, self.LIGHT_CLASS)
     
-    def add_success(self, msg: str):
-        return self.flash(msg, self.SUCCESS_CLASS)
+    def add_dark(self, msg: str):
+        return self.flash(msg, self.DARK_CLASS)
     
-    def add_warning(self, msg: str):
-        return self.flash(msg, self.WARNING_CLASS)
-
-
+    
 class PostViewAddon(object):
     def _process_post(self):
         self.post_data = ((request.data and json.loads(request.data)) if not request.form else dict(request.form.items())) if not request.mimetype == 'application/json' else request.json
