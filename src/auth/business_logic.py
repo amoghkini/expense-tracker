@@ -70,7 +70,6 @@ class BusinessLogic:
                     Utils.reset_incorrect_password_attempts(user)
                     Utils.login_user(email)
                     response.next_page = 'core.index_api'
-                    response.message = "User logged in successfully"
                 user.commit()
         except (IncorrectCredentialsException, UserNotFoundException, MaxLoginAttemptsReachedException, AccountLockedException, InvalidOTPSecretKeyException) as e:
             print(f"Excption occured in login method {str(e)}")
@@ -102,7 +101,6 @@ class BusinessLogic:
                         otp.save(commit=True)
                     else:
                         raise InvalidOTPSecretKeyException("Something went wrong while generating OTP.")
-            response.message = "The OTP is sent on registered email address"
         except (AccountLockedException, InvalidOTPSecretKeyException) as e:
             print(e)
             response.errors['email'] = e
@@ -189,7 +187,6 @@ class BusinessLogic:
                     
                     # Add data to session
                     Utils.login_user(email)
-                    response.message = "User logged in successfully"
                 else:
                     user = Utils.increment_incorrect_otp_attempts(user)
                     response.data['no_of_attempts'] = user.incorrect_otp_attempts
@@ -260,7 +257,6 @@ class BusinessLogic:
             otp = UserOTP(user_id=user.id, hashed_otp=hashed_otp, otp_timestamp=TimeUtils.get_epoch())
             otp.save(commit=True)
                 
-            response.message = "The OTP is sent on registered email address"
         except (AccountLockedException, InvalidOTPSecretKeyException, MaxResendOTPLimitReached, OTPTimeoutException) as e:
             print(e)
             response.errors['otp'] = e
@@ -289,8 +285,7 @@ class BusinessLogic:
             print(f"Registering new user: {user.email}")
             new_user = BusinessLogic.form_to_model(form_data)
             new_user.save(commit=True)
-            
-            response.message = "User created successfully"
+           
         except ValidationError as e:
             response.errors = {error['loc'][0]: f"Please provide a valid {CommonUtils.title_case(error['loc'][0])}" if error['type'] == 'value_error.missing' else error['msg']  for error in e.errors()}
             response.message = "Validation Error: Please correct the errors below"
@@ -339,7 +334,7 @@ class BusinessLogic:
             user.state = form_data.get('state')
             user.zip_code = form_data.get('zip_code')
             user.commit()
-            response.message = "Data updated successfully" 
+            response.message = "Profile data updated successfully" 
        
         except UserNotFoundException as e:
             print(f"Error encountered {e}")
@@ -401,9 +396,7 @@ class BusinessLogic:
             verify_token: Union[str, bytes] = token_serializer.generate_token(email)
             password_reset_url: str = get_external_url('auth.reset_password_api',{"token":verify_token})
             print("Password reset link", password_reset_url)
-            
-            response.message = "The password reset link has been sent successfully on registered email address"
-            
+                        
         except UserNotFoundException as e:
             print(f"The entered email id or password may be incorrect")
             response.errors['email'] = e
@@ -428,7 +421,6 @@ class BusinessLogic:
             if not user:
                 raise UserNotFoundException
             response.data = {'email': email}
-            # response.message = "Password reset successfully"
             
         except UserNotFoundException as e:
             print(f"The user is invalid or token is expired")
@@ -460,7 +452,6 @@ class BusinessLogic:
                 user = Utils.reset_incorrect_password_attempts(user)
                 user = Utils.reset_incorrect_otp_attempts(user)
                 user.commit()
-            response.message = "Password reset successfully"
             
         except ValidationError as e:
             response.errors = {error['loc'][0]: f"Please provide a valid {CommonUtils.title_case(error['loc'][0])}" if error['type'] == 'value_error.missing' else error['msg']  for error in e.errors()}
