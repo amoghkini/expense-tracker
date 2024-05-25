@@ -9,18 +9,6 @@ from typing import Any, Optional, Type, Union
 
 is_verbose = lambda: os.environ.get('VERBOSE') and True or False
 
-
-# classproperty decorator
-class classproperty(object):
-    """
-    This decorator is used to create read-only properties that are accessed directly on the class
-    """
-    def __init__(self, getter):
-        self.getter = getter
-        
-    def __get__(self, instance, owner):
-        return self.getter(owner)
-    
     
 class Flasher(object):
     DEFAULT_CATEGORY: str = 'info'
@@ -91,11 +79,6 @@ class Flasher(object):
         return self.flash(msg, self.DARK_CLASS)
     
     
-class PostViewAddon(object):
-    def _process_post(self):
-        self.post_data = ((request.data and json.loads(request.data)) if not request.form else dict(request.form.items())) if not request.mimetype == 'application/json' else request.json
-
-
 class BaseView(MethodView):
     _template: Optional[str] = None
     _form: Optional[Union[FormMeta, Any]] = None
@@ -149,26 +132,6 @@ class BaseView(MethodView):
         if "errors" not in self._context:
             self._context['errors'] = {}
             
-        if self._form is not None:
-
-            if type(self._form) == FormMeta:
-                if self._form_obj is not None:
-                    self._context['form'] = self._form(obj=self._form_obj,**self._form_args)
-                else:
-                    self._context['form'] = self._form(**self._form_args)
-                if self._obj_id is not None:
-                    self._context['obj_id'] = self._obj_id
-            else:
-                self._context['form'] = self._form
-            choices = self._context.get('choices')
-            if choices:
-                for field in self._context['form']:
-                    if hasattr(field,field.__name__) and hasattr(getattr(field,field.__name__),field.__name__):
-                        inner_field = getattr(getattr(field,field.__name__),getattr(field.__name__))
-                        if hasattr(inner_field,'choices'):
-                            setattr(inner_field,'choices',choices)
-            for f,v in self._form_args.items():
-                self._form.__dict__[f].data = v
         return render_template(self._template,**self._context)
 
     def redirect(self, endpoint: str, **kwargs: Any):
@@ -176,22 +139,6 @@ class BaseView(MethodView):
             return redirect(url_for(endpoint, **kwargs))
         return redirect(endpoint, **kwargs)
         
-    def form_validated(self):
-        if self._form:
-            return self._form().validate()
-        return False
-
-    def get_form_data(self):
-        result = {}
-        for field in self._form():
-            name = field.name
-            if '_' in field.name:
-                if not field.name.startswith('_'):
-                    if not field.name.endswith('_'):
-                        if field.name.split('_')[0] == field.name.split('_')[1]:
-                            name = field.name.split('_')[0]
-            result[name] = field.data
-        return result
     
     def get_env(self) -> Any:
         return current_app.create_jinja_environment()
@@ -199,105 +146,3 @@ class BaseView(MethodView):
     @property
     def flasher(self) -> Flasher:
         return self._flasher
-
-
-class ModelView(BaseView):
-    # ModelView is an abstract class
-    # just an interface really
-    # to use the ModelView create your own view class
-    # and use this as the parent class, and 
-    # set its _model class attr to the class to wrap ie:
-    # 
-    # class UserModelView(ModelView):
-    #   _model = User
-    _model = None
-
-    def render(self,**kwargs):
-        alt_model_id = '{0}_id'.format(self._model.__name__.lower())
-        if self._model is not None:
-            if 'model_id' in kwargs:
-                model_id = kwargs.pop('model_id')
-            elif alt_model_id in kwargs:
-                model_id = kwargs.pop('alt_model_id')
-            else:
-                model_id = None
-            if model_id is not None:
-                self._context['object'] = self.get_by_id(model_id)
-            else:
-                self._context['object'] = self._model()
-            self._context['model'] = self._model
-        return super(ModelView,self).render(**kwargs)
-
-    def add(self,**kwargs):
-        tmp = self._model(**kwargs)
-        tmp.save()
-        return tmp
-
-    def update(self,model_id,**kwargs):
-        tmp = self._model.query.filter_by(self._model.id==model_id).first()
-        if 'return' in kwargs:
-            if kwargs.pop('return',None):
-                rtn = True
-            else:
-                rtn = False
-        for k in kwargs.keys():
-            tmp.__dict__[k] = kwargs[k]
-        tmp.save()
-        if rtn: return tmp
-
-    def get_all(self):
-        return self._model.get_all()
-
-    def get_by_id(self,model_id):
-        return self._model.get_by_id(model_id)
-
-class AddModelView(ModelView,PostViewAddon):
-    _success_endpoint = None
-    _success_message = 'You successfully added an item'
-    
-    def get(self):
-        return self.render()
-
-    def post(self):
-        self._process_post()
-        self._context['obj'] = self._model(**self.post_data).save()
-        self.success(self._success_message)
-        return self.redirect(self._success_endpoint or '.index')
-
-
-def AddModelApiView(ModelView,PostViewAddon):
-    def post(self):
-        self._process_post()
-        return jsonify(**self.add(**self.post_data).to_json())
-
-class ListModelView(ModelView):
-    def get(self):
-        name = pluralize(self._model.__name__)
-        return jsonify(name=[m.to_json() for m in self.get_all()])
-
-class ViewModelView(ModelView):
-    def get(self,item_id):
-        m = self.get_by_id(item_id)
-        return jsonify(**m.to_json())
-
-class ModelAPIView(ModelView):
-    __abstract__ = True
-
-    @classproperty
-    def _default_view_routes(cls):
-        if cls is ModelAPIView:
-            return {}
-        name = cls.__name__.lower()
-        _default_view_routes = {
-                '/{}/list'.format(name):'{}-list'.format(name),
-                '/{}/detail'.format(name):'{}-detail'.format(name),
-                '/{}/edit'.format(name):'{}-edit'.format(name),
-        }
-        return _default_view_routes
-
-
-    def render(self,**kwargs):
-        old_rtn = super(ModelAPIView,self).render(**kwargs)
-        rtn = make_response(json.dumps(self._context))
-        rtn.headers['Content-Type'] = 'application/json'
-        return rtn
