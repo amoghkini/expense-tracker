@@ -18,7 +18,7 @@ class AuthLoginView(BaseView):
         self._context["errors"] = {}
         form_data: dict = request.form.to_dict()
         response_handler: Response = BusinessLogic.process_login(form_data)
-        import pdb;pdb.set_trace()
+
         if response_handler.success:
             if response_handler.message:
                 self.success(response_handler.message)
