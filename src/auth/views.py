@@ -137,8 +137,9 @@ class AuthLogOutView(BaseView):
         BusinessLogic.process_logout()
         # return self.redirect('core.index_api')
         response = make_response(redirect(url_for('core.index_api')))
-        response.set_cookie('authorization', '', expires=0)
+        response.delete_cookie('authorization')
         return response
+        
         
 class AuthSignUpView(BaseView):
     _template = 'signup.html'
@@ -238,6 +239,7 @@ class AuthProfileSecurity(BaseView):
             if response_handler.message:
                 self.warning(response_handler.message)
         return self.render()
+
 
 class AuthProfileNotificationsSettings(BaseView):
     _template = 'notifications_settings.html'
