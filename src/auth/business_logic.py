@@ -36,6 +36,7 @@ class BusinessLogic:
         form_data: dict
     ) -> Response:
         MAX_LOGIN_ATTEMPTS = 5
+        MAX_SESSIONS_PER_USER = 2
         response = Response()
         try:
             email: str = form_data.get('email', '')
@@ -76,9 +77,17 @@ class BusinessLogic:
                     )
                     new_session.save(commit=True)
                     
+                    # Check session limit
+                    active_sessions = Session.query.filter_by(user_id=user.id, is_active=True).all()
+                    if len(active_sessions) > MAX_SESSIONS_PER_USER:
+                        for session_to_invalidate in active_sessions[:-MAX_SESSIONS_PER_USER]:
+                            session_to_invalidate.is_active = False
+                            session_to_invalidate.commit()
+                        response.message = "Maxed allowed devices reached. The oldest loggedin deviced is logged out."
                     user.last_login_time = TimeUtils.get_epoch()
                     Utils.reset_incorrect_password_attempts(user)
                     Utils.login_user(email)
+                    
                     response.data = token
                     response.next_page = 'core.index_api'
                 user.commit()
