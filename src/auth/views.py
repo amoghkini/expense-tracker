@@ -1,5 +1,4 @@
-from flask import request, g, session
-
+from flask import request, g, session, make_response, redirect, url_for
 from auth.business_logic import BusinessLogic
 from auth.constants import IndianStatesAndUTs
 from main.baseview import BaseView
@@ -19,7 +18,7 @@ class AuthLoginView(BaseView):
         self._context["errors"] = {}
         form_data: dict = request.form.to_dict()
         response_handler: Response = BusinessLogic.process_login(form_data)
-        
+        import pdb;pdb.set_trace()
         if response_handler.success:
             if response_handler.message:
                 self.success(response_handler.message)
@@ -28,7 +27,11 @@ class AuthLoginView(BaseView):
             next_page = request.args.get('next_page')
             if next_page:
                 return self.redirect(response_handler.next_page, next_page=next_page)
-            return self.redirect(response_handler.next_page)
+            # return self.redirect(response_handler.next_page)
+
+            response = make_response(redirect(url_for(response_handler.next_page)))
+            response.set_cookie('authorization', response_handler.data, secure=True, httponly=True)
+            return response
         else:
             if response_handler.message:
                 self.warning(response_handler.message)
@@ -132,8 +135,10 @@ class AuthLogOutView(BaseView):
     @login_required
     def get(self):
         BusinessLogic.process_logout()
-        return self.redirect('core.index_api')
-
+        # return self.redirect('core.index_api')
+        response = make_response(redirect(url_for('core.index_api')))
+        response.set_cookie('authorization', '', expires=0)
+        return response
         
 class AuthSignUpView(BaseView):
     _template = 'signup.html'

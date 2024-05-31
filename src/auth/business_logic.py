@@ -14,14 +14,15 @@ from auth.exceptions import (
 )
 from auth.models import (
     User, 
-    UserOTP
+    UserOTP,
+    Session
 )
 from auth.data_validator import (
     ChangePasswordRequestValidator, 
     ResetPasswordValidator,
     UserSignUpValidator
 )
-from auth.utils import Utils, TokenSerializer, OTPUtils
+from auth.utils import Utils, TokenSerializer, OTPUtils, JWTUtils
 from utils.flask_utils import get_external_url
 from utils.response_handler import Response
 from utils.time_utils import TimeUtils
@@ -55,8 +56,6 @@ class BusinessLogic:
                     user.commit()
                     raise IncorrectCredentialsException("The entered email id or password may be incorrect")
 
-                # Update last login date 
-                user.last_login_time = TimeUtils.get_epoch()
                 
                 if user.two_factor_auth:
                     if user.otp_secret:
@@ -67,8 +66,20 @@ class BusinessLogic:
                     else:
                         raise InvalidOTPSecretKeyException("Something went wrong while generating OTP.")
                 else:
+                    from flask import request
+                    token = JWTUtils.generate_jwt(user.email)
+                    new_session = Session(
+                        user_id=user.id,
+                        jwt_token=token,
+                        ip_address=request.remote_addr,
+                        user_agent=request.user_agent.string
+                    )
+                    new_session.save(commit=True)
+                    
+                    user.last_login_time = TimeUtils.get_epoch()
                     Utils.reset_incorrect_password_attempts(user)
                     Utils.login_user(email)
+                    response.data = token
                     response.next_page = 'core.index_api'
                 user.commit()
         except (IncorrectCredentialsException, UserNotFoundException, MaxLoginAttemptsReachedException, AccountLockedException, InvalidOTPSecretKeyException) as e:
