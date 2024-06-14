@@ -316,16 +316,43 @@ class BusinessLogic:
             response.success = False
         return response
     
+    
     @staticmethod
-    def fetch_profile_data(email: str) -> Response:
-        response = Response()
+    def fetch_security_page_data(email: str) -> Response:
+        response = Response(data = {})
         try:            
             user: User = User.get_by_email(email)
             
             if not user:
                 raise UserNotFoundException
-            response.data = user.to_dict()
-            print(response.data)
+            response.data['profile_data'] = user.to_dict()
+            sessions = Session.query.filter_by(user_id=user.id, is_active=True).all()
+            sessions_list = [
+                {'id': session.id, 'ip_address': session.ip_address, 'created_at': session.created_at.strftime('%d %b %Y %H:%M:%S')}
+                for session in sessions
+            ]
+            response.data['sessions'] = sessions_list
+        except UserNotFoundException as e:
+            print(f"The user is invalid")
+            response.errors['email'] = "The entered email invalid"
+            response.success = False
+        except Exception as e:
+            print(f"An exception occured while fetching the profile data {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
+    
+    
+    @staticmethod
+    def fetch_profile_data(email: str) -> Response:
+        response = Response(data = {})
+        try:            
+            user: User = User.get_by_email(email)
+            
+            if not user:
+                raise UserNotFoundException
+            response.data['profile_data'] = user.to_dict()
+            
         except UserNotFoundException as e:
             print(f"The user is invalid")
             response.errors['email'] = "The entered email invalid"

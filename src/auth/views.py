@@ -177,7 +177,7 @@ class AuthProfileView(BaseView):
             if response_handler.message:
                 self.success(response_handler.message)
             self._context["errors"] = {}
-            self._context["profile_data"] = response_handler.data
+            self._context["profile_data"] = response_handler.data['profile_data']
         else:
             if response_handler.message:
                 self.warning(response_handler.message)
@@ -196,7 +196,7 @@ class AuthProfileSettingsView(BaseView):
                 self.success(response_handler.message)
             self._context["errors"] = {}
             self._context['states'] = IndianStatesAndUTs.allowed_values()
-            self._context["profile_data"] = response_handler.data
+            self._context["profile_data"] = response_handler.data['profile_data']
         else:
             if response_handler.message:
                 self.warning(response_handler.message)
@@ -229,12 +229,14 @@ class AuthProfileSecurity(BaseView):
     @login_required
     def get(self):
         self._context["errors"] = {}
-        response_handler: Response = BusinessLogic.fetch_profile_data(g.email)
+
+        response_handler: Response = BusinessLogic.fetch_security_page_data(g.email)
         if response_handler.success:
             if response_handler.message:
                 self.success(response_handler.message)
             self._context["errors"] = {}
-            self._context["profile_data"] = response_handler.data
+            self._context["profile_data"] = response_handler.data['profile_data']
+            self._context["sessions"] = response_handler.data['sessions']
         else:
             if response_handler.message:
                 self.warning(response_handler.message)
