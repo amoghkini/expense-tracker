@@ -21,6 +21,7 @@
                     <a class="nav-link" id="contact-tab" href="{{ url_for('auth.profile_notifications_settings_api') }}" role="tab" aria-controls="home"
                         aria-selected="true">Notifications</a>
                 </ul>
+                {% include 'flashes.html' %}
                 <h5 class="mb-0 mt-5">Security Settings</h5>
                 <p>These settings are helps you keep your account secure.</p>
                 <div class="list-group mb-5 shadow">
@@ -94,12 +95,15 @@
                     <tbody>
                         {% for session in sessions %}
                             <tr>
-                                <th scope="col"><i class="fe fe-globe fe-12 text-muted mr-2"></i>Chrome -
-                                    Windows 11</th>
+                                {% if session.get('current') %}
+                                    <th scope="col"><i class="fe fe-globe fe-12 text-muted mr-2"></i>Chrome - Windows 11 <span class="dot dot-md bg-success"></span></th>
+                                {% else %}
+                                    <th scope="col"><i class="fe fe-globe fe-12 text-muted mr-2"></i>Chrome - Windows 11</th>
+                                {% endif %}
                                 <td>Mumbai, India</td>
                                 <td>{{session.get('ip_address')}}</td>
                                 <td>{{session.get('created_at')}}</td>
-                                <td><a hreff="#" class="text-muted"><i class="fe fe-x"></i></a></td>
+                                <td><a href="{{ url_for('auth.logout_device_api', action='single', id=session.get('id')) }}" class="text-muted"><i class="fe fe-x"></i></a></td>
                             </tr>
                         {% endfor %}
                     </tbody>

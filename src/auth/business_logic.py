@@ -1,5 +1,5 @@
 from pydantic import ValidationError
-from typing import Union
+from typing import Any, Optional, Union
 
 from auth.constants import UserStatus
 from auth.exceptions import (
@@ -293,7 +293,7 @@ class BusinessLogic:
             Utils.logout_user()
         except Exception as e:
             print(f"An exception occured while registering the user {str(e)}")
-            
+   
     @staticmethod
     def process_signup(
         form_data: dict
@@ -318,7 +318,10 @@ class BusinessLogic:
     
     
     @staticmethod
-    def fetch_security_page_data(email: str) -> Response:
+    def fetch_security_page_data(
+        email: str,
+        authorization: str
+    ) -> Response:
         response = Response(data = {})
         try:            
             user: User = User.get_by_email(email)
@@ -327,10 +330,16 @@ class BusinessLogic:
                 raise UserNotFoundException
             response.data['profile_data'] = user.to_dict()
             sessions = Session.query.filter_by(user_id=user.id, is_active=True).all()
-            sessions_list = [
-                {'id': session.id, 'ip_address': session.ip_address, 'created_at': session.created_at.strftime('%d %b %Y %H:%M:%S')}
+            sessions_list: list[dict[str, Any]] = [
+                {
+                    'id': session.id,
+                    'ip_address': session.ip_address,
+                    'created_at': session.created_at.strftime('%d %b %Y %H:%M:%S'),
+                    'current': True if session.jwt_token == authorization else False
+                }
                 for session in sessions
             ]
+            print(sessions_list)
             response.data['sessions'] = sessions_list
         except UserNotFoundException as e:
             print(f"The user is invalid")
