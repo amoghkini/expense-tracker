@@ -298,34 +298,34 @@ class BusinessLogic:
         except Exception as e:
             print(f"An exception occured while registering the user {str(e)}")
 
-    # @staticmethod
-    # def logout_device(
-    #     email: str,
-    #     device_id: Optional[str] = None
-    # ) -> Response:
+    @staticmethod
+    def logout_device(
+        email: str,
+        device_id: Optional[str] = None
+    ) -> Response:
         
-    #     response = Response()
-    #     try:
-    #         user: User = User.get_by_email(email)
-    #         # TODO: Handle case if user is not registered in the database.
-    #         if device_id:
-    #             active_session = Session.query.filter_by(user_id=user.id, id = device_id, is_active=True).all()
-    #             active_session.is_active = False
-    #             active_session.commit()
-    #         else:
-    #             active_sessions = Session.query.filter_by(user_id=user.id, is_active=True).all()
-    #             if active_sessions:
-    #                 for session_to_invalidate in active_sessions:
-    #                     session_to_invalidate.is_active = False
-    #                     session_to_invalidate.commit()
-    #             else:
-    #                 raise Exception("No logged in devices found")
-    #             Utils.logout_user()
-    #     except Exception as e:
-    #         print(f"An exception occured while logging a device out {str(e)}")
-    #         response.message = "An internal error occured"
-    #         response.success = False
-    #     return response
+        response = Response()
+        try:
+            user: User = User.get_by_email(email)
+            # TODO: Handle case if user is not registered in the database.
+            if device_id:
+                active_session = Session.query.filter_by(user_id=user.id, id = device_id, is_active=True).first()
+                Utils.invalidate_session(active_session)
+                response.next_page = 'auth.profile_security_api'
+            else:
+                active_sessions = Session.query.filter_by(user_id=user.id, is_active=True).all()
+                if active_sessions:
+                    for session_to_invalidate in active_sessions:
+                        Utils.invalidate_session(session_to_invalidate)
+                else:
+                    raise Exception("No logged in devices found")
+                Utils.logout_user()
+                response.next_page = 'auth.logout_api'
+        except Exception as e:
+            print(f"An exception occured while logging a device out {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
         
     @staticmethod
     def process_signup(

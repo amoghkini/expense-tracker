@@ -72,6 +72,11 @@ class Utils:
         user.incorrect_otp_attempts = 0
         return user
     
+    @staticmethod
+    def invalidate_session(session) -> None:
+        session.is_active = False
+        session.commit()
+        
     def __str__(self) -> str:
         return "This is utility function for auth blueprint"
 
