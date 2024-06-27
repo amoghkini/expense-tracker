@@ -134,13 +134,14 @@ class AuthLogOutView(BaseView):
     
     @login_required
     def get(self):
+        # TODO: We need to mark jwt in sessions table as invalidate.
         BusinessLogic.process_logout()
         # return self.redirect('core.index_api')
         response = make_response(redirect(url_for('core.index_api')))
         response.delete_cookie('authorization')
         return response
         
-        
+
 class AuthSignUpView(BaseView):
     _template = 'signup.html'
     
@@ -229,8 +230,8 @@ class AuthProfileSecurity(BaseView):
     @login_required
     def get(self):
         self._context["errors"] = {}
-
-        response_handler: Response = BusinessLogic.fetch_security_page_data(g.email)
+        authorization = request.cookies.get('authorization', '')
+        response_handler: Response = BusinessLogic.fetch_security_page_data(g.email, authorization)
         if response_handler.success:
             if response_handler.message:
                 self.success(response_handler.message)
