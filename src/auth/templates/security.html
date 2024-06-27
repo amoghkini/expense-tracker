@@ -103,7 +103,11 @@
                                 <td>Mumbai, India</td>
                                 <td>{{session.get('ip_address')}}</td>
                                 <td>{{session.get('created_at')}}</td>
-                                <td><a href="{{ url_for('auth.logout_device_api', action='single', id=session.get('id')) }}" class="text-muted"><i class="fe fe-x"></i></a></td>
+                                {% if session.get('current') %}
+                                    <td><a href="{{ url_for('auth.logout_api') }}" class="text-muted"><i class="fe fe-x"></i></a></td>
+                                {% else %}
+                                    <td><a href="{{ url_for('auth.logout_device_api', action='single', id=session.get('id')) }}" class="text-muted"><i class="fe fe-x"></i></a></td>
+                                {% endif %}
                             </tr>
                         {% endfor %}
                     </tbody>

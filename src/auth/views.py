@@ -135,12 +135,35 @@ class AuthLogOutView(BaseView):
     @login_required
     def get(self):
         # TODO: We need to mark jwt in sessions table as invalidate.
-        BusinessLogic.process_logout()
+        token: str = request.cookies.get('authorization', '')
+        BusinessLogic.process_logout(token)
         # return self.redirect('core.index_api')
         response = make_response(redirect(url_for('core.index_api')))
         response.delete_cookie('authorization')
         return response
         
+
+# class AuthLogOutDeviceView(BaseView):
+    
+#     # TODO: The logout devices page should send the valid redirect url. We can achieve this using response_handler.next_page variable.
+#     # TODO: If we are logging out all the devices then we should mark all the devices as invalidate and delete cookies from current and remaining devices.
+#     # TODO: If we are logging out single device then we should just invalidate the device and redirect user to the security page. But if only one device is loggedin and user logs it out from table then we should delete cookies and redirect user to login page instead of security page.
+#     # TODO: A normal logout route should delete authorization/ jwt cookies from current session and invalidate the current session only. This can be achieved using jwt but logging out from sessions list will be done using id since we don't want to pass the jwt as query parameter.                                                                                                                                                                                                                                                                                                                                                                                                                    
+#     # TODO: We should display  something to identify user that this is the current logged in session in my sessions list. If user clicks on logout on this page, we should directly hit the logout route instead of logout-device route.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+#     def get(self):
+#         import pdb;pdb.set_trace()
+#         action: str = request.args.get('action', '').lower()
+#         if action == 'all':
+#             response_handler = BusinessLogic.logout_device(g.email)
+#             self.redirect('auth.logout_api')
+#         elif action == 'single':
+#             device_id = request.args.get('id', '')
+#             response_handler = BusinessLogic.logout_device(g.email, device_id)
+#             return self.redirect('auth.profile_security_api')
+#         else:
+#             self.warning(f"Please provide valid action to logout the device")
+#             return self.redirect('auth.profile_security_api')
+            
 
 class AuthSignUpView(BaseView):
     _template = 'signup.html'
@@ -230,8 +253,8 @@ class AuthProfileSecurity(BaseView):
     @login_required
     def get(self):
         self._context["errors"] = {}
-        authorization = request.cookies.get('authorization', '')
-        response_handler: Response = BusinessLogic.fetch_security_page_data(g.email, authorization)
+        token = request.cookies.get('authorization', '')
+        response_handler: Response = BusinessLogic.fetch_security_page_data(g.email, token)
         if response_handler.success:
             if response_handler.message:
                 self.success(response_handler.message)
