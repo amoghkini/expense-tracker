@@ -307,20 +307,30 @@ class BusinessLogic:
         response = Response()
         try:
             user: User = User.get_by_email(email)
+            if not user:
+                raise UserNotFoundException("The user is not registered in system")
+            
             # TODO: Handle case if user is not registered in the database.
             if device_id:
                 active_session = Session.query.filter_by(user_id=user.id, id = device_id, is_active=True).first()
-                Utils.invalidate_session(active_session)
-                response.next_page = 'auth.profile_security_api'
+                if active_session:
+                    Utils.invalidate_session(active_session)
+                    response.next_page = 'auth.profile_security_api'
+                else:
+                    response.next_page = 'auth.logout_api'    
             else:
                 active_sessions = Session.query.filter_by(user_id=user.id, is_active=True).all()
                 if active_sessions:
                     for session_to_invalidate in active_sessions:
                         Utils.invalidate_session(session_to_invalidate)
+                    response.next_page = 'auth.logout_api'
                 else:
-                    raise Exception("No logged in devices found")
+                    response.next_page = 'auth.logout_api'    
                 Utils.logout_user()
-                response.next_page = 'auth.logout_api'
+        except UserNotFoundException as e:
+            print(f"The user is invalid")
+            response.message = "The entered email invalid"
+            response.success = False
         except Exception as e:
             print(f"An exception occured while logging a device out {str(e)}")
             response.message = "An internal error occured"
