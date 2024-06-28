@@ -84,3 +84,5 @@ class Session(Model):
     ip_address = Column(String(45), nullable=False)
     user_agent = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
+    deactivation_time = Column(BigInteger, nullable=True)  
+    deactivation_reason = Column(String(45), nullable=True)

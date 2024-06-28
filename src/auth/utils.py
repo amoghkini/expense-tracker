@@ -7,6 +7,7 @@ from itsdangerous import URLSafeTimedSerializer
 from typing import Optional, Union
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from utils.time_utils import TimeUtils
 from flask import session
 
 
@@ -73,8 +74,10 @@ class Utils:
         return user
     
     @staticmethod
-    def invalidate_session(session) -> None:
+    def invalidate_session(session, deactivation_reason) -> None:
         session.is_active = False
+        session.deactivation_time = TimeUtils.get_epoch()
+        session.deactivation_reason = deactivation_reason
         session.commit()
         
     def __str__(self) -> str:

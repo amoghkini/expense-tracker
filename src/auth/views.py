@@ -149,7 +149,6 @@ class AuthLogOutDeviceView(BaseView):
     # TODO: If we are logging out all the devices then we should mark all the devices as invalidate and delete cookies from current and remaining devices.
     # TODO: If we are logging out single device then we should just invalidate the device and redirect user to the security page. But if only one device is loggedin and user logs it out from table then we should delete cookies and redirect user to login page instead of security page.                                                                                                                                                                                                                                                                                                                                                                                                            
     def get(self):
-        import pdb;pdb.set_trace()
         action: str = request.args.get('action', '').lower()
         if action == 'all':
             response_handler = BusinessLogic.logout_device(g.email)

@@ -1,7 +1,7 @@
 from pydantic import ValidationError
 from typing import Any, Optional, Union
 
-from auth.constants import UserStatus
+from auth.constants import JWTInvalidReasons, UserStatus
 from auth.exceptions import (
     AccountLockedException,
     IncorrectCredentialsException, 
@@ -293,7 +293,7 @@ class BusinessLogic:
     ) -> None:
         try:
             active_session = Session.query.filter_by(jwt_token=token, is_active=True).first()
-            Utils.invalidate_session(active_session)
+            Utils.invalidate_session(active_session, JWTInvalidReasons.LOG_OUT)
             Utils.logout_user()
         except Exception as e:
             print(f"An exception occured while registering the user {str(e)}")
@@ -314,7 +314,7 @@ class BusinessLogic:
             if device_id:
                 active_session = Session.query.filter_by(user_id=user.id, id = device_id, is_active=True).first()
                 if active_session:
-                    Utils.invalidate_session(active_session)
+                    Utils.invalidate_session(active_session, JWTInvalidReasons.LOGGOUT_FROM_SESSIONS_LIST)
                     response.next_page = 'auth.profile_security_api'
                 else:
                     response.next_page = 'auth.logout_api'    
@@ -322,7 +322,7 @@ class BusinessLogic:
                 active_sessions = Session.query.filter_by(user_id=user.id, is_active=True).all()
                 if active_sessions:
                     for session_to_invalidate in active_sessions:
-                        Utils.invalidate_session(session_to_invalidate)
+                        Utils.invalidate_session(session_to_invalidate, JWTInvalidReasons.LOGGOUT_FROM_SESSIONS_LIST)
                     response.next_page = 'auth.logout_api'
                 else:
                     response.next_page = 'auth.logout_api'    

@@ -7,6 +7,7 @@ class BaseEnum(StrEnum):
     def allowed_values(cls):
         return [member.value for member in cls]
     
+    
 class UserStatus(BaseEnum):
     CREATED = auto()
     ACTIVATED = auto()
@@ -16,6 +17,15 @@ class UserStatus(BaseEnum):
     TERMINATED = auto()
     
 
+class JWTInvalidReasons(BaseEnum):
+    BLACKLISTED_BY_ADMIN = 'Blacklisted By Admin'
+    DAILY_EOD = 'Daily EOD Process'
+    LOG_OUT = 'Log Out'
+    SESSION_TIMEOUT = 'Session Timeout'
+    MAX_LOGIN_ATTEMPTS_REACHED = 'Maxed Login Attempts Reached'
+    LOGGOUT_FROM_SESSIONS_LIST = 'Log Out From Sessions List'   
+    
+    
 class RegularExpressions(BaseEnum):
     EMAIL_REGEX = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
     PASSWORD_REGEX = r"\b^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,20}$\b"
