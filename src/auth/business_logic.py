@@ -293,7 +293,10 @@ class BusinessLogic:
     ) -> None:
         try:
             active_session = Session.query.filter_by(jwt_token=token, is_active=True).first()
-            Utils.invalidate_session(active_session, JWTInvalidReasons.LOG_OUT)
+            if active_session:
+                Utils.invalidate_session(active_session, JWTInvalidReasons.LOG_OUT)
+            else:
+                print("JWT not found. This should not happen. Need to investigate the issue.")
             Utils.logout_user()
         except Exception as e:
             print(f"An exception occured while registering the user {str(e)}")
