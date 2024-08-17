@@ -1,7 +1,7 @@
 from pydantic import ValidationError
-from typing import Union
+from typing import Any, Optional, Union
 
-from auth.constants import UserStatus
+from auth.constants import JWTInvalidReasons, UserStatus
 from auth.exceptions import (
     AccountLockedException,
     IncorrectCredentialsException, 
@@ -14,14 +14,15 @@ from auth.exceptions import (
 )
 from auth.models import (
     User, 
-    UserOTP
+    UserOTP,
+    Session
 )
 from auth.data_validator import (
     ChangePasswordRequestValidator, 
     ResetPasswordValidator,
     UserSignUpValidator
 )
-from auth.utils import Utils, TokenSerializer, OTPUtils
+from auth.utils import Utils, TokenSerializer, OTPUtils, JWTUtils
 from utils.flask_utils import get_external_url
 from utils.response_handler import Response
 from utils.time_utils import TimeUtils
@@ -35,6 +36,7 @@ class BusinessLogic:
         form_data: dict
     ) -> Response:
         MAX_LOGIN_ATTEMPTS = 5
+        MAX_SESSIONS_PER_USER = 2
         response = Response()
         try:
             email: str = form_data.get('email', '')
@@ -55,8 +57,6 @@ class BusinessLogic:
                     user.commit()
                     raise IncorrectCredentialsException("The entered email id or password may be incorrect")
 
-                # Update last login date 
-                user.last_login_time = TimeUtils.get_epoch()
                 
                 if user.two_factor_auth:
                     if user.otp_secret:
@@ -67,8 +67,28 @@ class BusinessLogic:
                     else:
                         raise InvalidOTPSecretKeyException("Something went wrong while generating OTP.")
                 else:
+                    from flask import request
+                    token = JWTUtils.generate_jwt(user.email)
+                    new_session = Session(
+                        user_id=user.id,
+                        jwt_token=token,
+                        ip_address=request.remote_addr,
+                        user_agent=request.user_agent.string
+                    )
+                    new_session.save(commit=True)
+                    
+                    # Check session limit
+                    active_sessions = Session.query.filter_by(user_id=user.id, is_active=True).all()
+                    if len(active_sessions) > MAX_SESSIONS_PER_USER:
+                        for session_to_invalidate in active_sessions[:-MAX_SESSIONS_PER_USER]:
+                            session_to_invalidate.is_active = False
+                            session_to_invalidate.commit()
+                        response.message = "Maxed allowed devices reached. The oldest loggedin deviced is logged out."
+                    user.last_login_time = TimeUtils.get_epoch()
                     Utils.reset_incorrect_password_attempts(user)
                     Utils.login_user(email)
+                    
+                    response.data = token
                     response.next_page = 'core.index_api'
                 user.commit()
         except (IncorrectCredentialsException, UserNotFoundException, MaxLoginAttemptsReachedException, AccountLockedException, InvalidOTPSecretKeyException) as e:
@@ -268,12 +288,58 @@ class BusinessLogic:
         return response
         
     @staticmethod
-    def process_logout() -> None:
+    def process_logout(
+        token: str
+    ) -> None:
         try:
+            active_session = Session.query.filter_by(jwt_token=token, is_active=True).first()
+            if active_session:
+                Utils.invalidate_session(active_session, JWTInvalidReasons.LOG_OUT)
+            else:
+                print("JWT not found. This should not happen. Need to investigate the issue.")
             Utils.logout_user()
         except Exception as e:
             print(f"An exception occured while registering the user {str(e)}")
+
+    @staticmethod
+    def logout_device(
+        email: str,
+        device_id: Optional[str] = None
+    ) -> Response:
+        
+        response = Response()
+        try:
+            user: User = User.get_by_email(email)
+            if not user:
+                raise UserNotFoundException("The user is not registered in system")
             
+            # TODO: Handle case if user is not registered in the database.
+            if device_id:
+                active_session = Session.query.filter_by(user_id=user.id, id = device_id, is_active=True).first()
+                if active_session:
+                    Utils.invalidate_session(active_session, JWTInvalidReasons.LOGGOUT_FROM_SESSIONS_LIST)
+                    response.next_page = 'auth.profile_security_api'
+                else:
+                    response.next_page = 'auth.logout_api'    
+            else:
+                active_sessions = Session.query.filter_by(user_id=user.id, is_active=True).all()
+                if active_sessions:
+                    for session_to_invalidate in active_sessions:
+                        Utils.invalidate_session(session_to_invalidate, JWTInvalidReasons.LOGGOUT_FROM_SESSIONS_LIST)
+                    response.next_page = 'auth.logout_api'
+                else:
+                    response.next_page = 'auth.logout_api'    
+                Utils.logout_user()
+        except UserNotFoundException as e:
+            print(f"The user is invalid")
+            response.message = "The entered email invalid"
+            response.success = False
+        except Exception as e:
+            print(f"An exception occured while logging a device out {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
+        
     @staticmethod
     def process_signup(
         form_data: dict
@@ -296,16 +362,52 @@ class BusinessLogic:
             response.success = False
         return response
     
+    
     @staticmethod
-    def fetch_profile_data(email: str) -> Response:
-        response = Response()
+    def fetch_security_page_data(
+        email: str,
+        authorization: str
+    ) -> Response:
+        response = Response(data = {})
         try:            
             user: User = User.get_by_email(email)
             
             if not user:
                 raise UserNotFoundException
-            response.data = user.to_dict()
-            print(response.data)
+            response.data['profile_data'] = user.to_dict()
+            sessions = Session.query.filter_by(user_id=user.id, is_active=True).all()
+            sessions_list: list[dict[str, Any]] = [
+                {
+                    'id': session.id,
+                    'ip_address': session.ip_address,
+                    'created_at': session.created_at.strftime('%d %b %Y %H:%M:%S'),
+                    'current': True if session.jwt_token == authorization else False
+                }
+                for session in sessions
+            ]
+            print(sessions_list)
+            response.data['sessions'] = sessions_list
+        except UserNotFoundException as e:
+            print(f"The user is invalid")
+            response.errors['email'] = "The entered email invalid"
+            response.success = False
+        except Exception as e:
+            print(f"An exception occured while fetching the profile data {str(e)}")
+            response.message = "An internal error occured"
+            response.success = False
+        return response
+    
+    
+    @staticmethod
+    def fetch_profile_data(email: str) -> Response:
+        response = Response(data = {})
+        try:            
+            user: User = User.get_by_email(email)
+            
+            if not user:
+                raise UserNotFoundException
+            response.data['profile_data'] = user.to_dict()
+            
         except UserNotFoundException as e:
             print(f"The user is invalid")
             response.errors['email'] = "The entered email invalid"

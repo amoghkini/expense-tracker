@@ -2,8 +2,6 @@ import os
 import json
 from flask.views import MethodView
 from flask import flash, jsonify, make_response, redirect, render_template, url_for, current_app, request, Flask
-from inflection import pluralize
-from wtforms.form import FormMeta
 from typing import Any, Optional, Type, Union
 
 
@@ -138,7 +136,7 @@ class Flasher(object):
     
 class BaseView(MethodView):
     _template: Optional[str] = None
-    _form: Optional[Union[FormMeta, Any]] = None
+    _form: Optional[Any] = None
     _context: dict[str, Any] = {}
     _form_obj: Optional[Any] = None
     _obj_id: Optional[int] = None
@@ -239,8 +237,7 @@ class BaseView(MethodView):
         if kwargs:
             self._context.update(kwargs)
         if "errors" not in self._context:
-            self._context['errors'] = {}
-            
+            self._context['errors'] = {}          
         return render_template(self._template, **self._context)
 
     def redirect(self, endpoint: str, **kwargs: Any) -> Any:
@@ -255,14 +252,6 @@ class BaseView(MethodView):
             return redirect(url_for(endpoint, **kwargs))
         return redirect(endpoint, **kwargs)
         
-    
-    def get_env(self) -> Any:
-        """
-        Get the Jinja environment of the current app.
-        
-        :return: The Jinja environment.
-        """
-        return current_app.create_jinja_environment()
     
     @property
     def flasher(self) -> Flasher:

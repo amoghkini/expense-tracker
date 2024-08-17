@@ -1,10 +1,13 @@
 import bcrypt
 import pyotp
 import re
+import jwt
+from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer
 from typing import Optional, Union
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from utils.time_utils import TimeUtils
 from flask import session
 
 
@@ -70,6 +73,13 @@ class Utils:
         user.incorrect_otp_attempts = 0
         return user
     
+    @staticmethod
+    def invalidate_session(session, deactivation_reason) -> None:
+        session.is_active = False
+        session.deactivation_time = TimeUtils.get_epoch()
+        session.deactivation_reason = deactivation_reason
+        session.commit()
+        
     def __str__(self) -> str:
         return "This is utility function for auth blueprint"
 
@@ -171,3 +181,54 @@ class OTPUtils:
         
         is_valid = bcrypt.checkpw(otp.encode('utf-8'), otp_entry.hashed_otp)
         return is_valid
+    
+    
+class JWTUtils:
+    """
+    Utility class for generating and decoding JWT tokens.
+    """
+    
+    @staticmethod
+    def generate_jwt(
+        user_id: Union[str, int], 
+        secret_key: str = "SomeRandomSecretKey"
+    ) -> str:
+        """
+        Generates a JWT token for a given user ID.
+
+        Args:
+            user_id (Union[str, int]): The ID of the user for whom the token is generated.
+            secret_key (str): The secret key used to sign the JWT token. Defaults to "SomeRandomSecretKey".
+
+        Returns:
+            str: The encoded JWT token.
+        """
+        payload = {
+            'user_id': user_id,
+            'exp': datetime.utcnow() + timedelta(hours=6)
+        }
+        token = jwt.encode(payload, secret_key, algorithm='HS256')
+        return token
+
+    @staticmethod
+    def decode_jwt(
+        token: str, 
+        secret_key: str = "SomeRandomSecretKey"
+    ) -> Optional[dict[str, Union[str, int]]]:
+        """
+        Decodes a given JWT token.
+
+        Args:
+            token (str): The JWT token to be decoded.
+            secret_key (str): The secret key used to decode the JWT token. Defaults to "SomeRandomSecretKey".
+
+        Returns:
+            Optional[Dict[str, Union[str, int]]]: The decoded payload if the token is valid, otherwise None.
+        """
+        try:
+            payload = jwt.decode(token, secret_key, algorithms=['HS256'])
+            return payload
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.InvalidTokenError:
+            return None

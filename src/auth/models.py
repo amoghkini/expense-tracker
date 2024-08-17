@@ -75,3 +75,14 @@ class UserOTP(Model):
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     hashed_otp = Column(String(60), nullable=False)
     otp_timestamp = Column(BigInteger, nullable=False)
+
+
+class Session(Model):
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    jwt_token = Column(String(500), nullable=False)
+    ip_address = Column(String(45), nullable=False)
+    user_agent = Column(String(255), nullable=False)
+    is_active = Column(Boolean, default=True)
+    deactivation_time = Column(BigInteger, nullable=True)  
+    deactivation_reason = Column(String(45), nullable=True)
