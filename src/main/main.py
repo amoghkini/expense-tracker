@@ -17,11 +17,6 @@ from main.exceptions import (
 )
 from utils.logger import Logger
 
-
-class MyFlask(Flask):
-    jinja_options = dict(Flask.jinja_options)
-    jinja_options.setdefault('extensions',
-            []).append('jinja2_highlight.HighlightExtension')
         
 class AppFactory(object):
     """
