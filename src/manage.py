@@ -4,8 +4,6 @@ from main.extensions import db
 from main.main import AppFactory
 app = AppFactory().get_app(__name__)
 
-# # from app import app
-# # from app import db
 
 # def migrate_command():
 #     # cli.run_command('db', ['migrate'])
