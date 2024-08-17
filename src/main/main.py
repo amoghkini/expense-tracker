@@ -40,7 +40,8 @@ class AppFactory(object):
         app_module_name: str,
         **kwargs: Any
     ) -> Flask:
-        self.app: MyFlask = MyFlask(app_module_name, **kwargs)
+        # self.app: MyFlask = MyFlask(app_module_name, **kwargs)
+        self.app = Flask(app_module_name, **kwargs)
         self.app.config.from_object(self.app_config)
         self.app.config['VERBOSE'] = is_verbose()
 
@@ -53,12 +54,10 @@ class AppFactory(object):
         self.__load_views()
         self.__register_context_processors()
         self.__register_templalte_filters()
-        self.__register_template_extensions()
         self.__register_middlewares()
         
         # Instantiate AppLifecycle with the app instance
         lifecycle_manager = AppLifeCycle(self.app)
-        lifecycle_manager.register_before_first_request()
         lifecycle_manager.register_before_request()
         lifecycle_manager.register_after_request()
         lifecycle_manager.register_teardown_appcontext()
@@ -166,7 +165,6 @@ class AppFactory(object):
             if self.app.config.get('VERBOSE',False):
                 print('Finished registering blueprints and url routes')
         else:
-            print(f"All the routes are already registered")
             if self.app.config.get('VERBOSE',False):
                 print(f"Skipping this processes...")
             
@@ -245,12 +243,7 @@ class AppFactory(object):
                 self.app.jinja_env.filters[filter_path_name] = getattr(module, filter_path_name)
             else:
                 raise NoTemplateFilterException(f"No {filter_path_name} template filter found")
-          
-    def __register_template_extensions(self):
-        self.app.jinja_options = dict(Flask.jinja_options)
-        exts = self.app.config.get('TEMPLATE_EXTENSIONS') or ['jinja2_highlight.HighlightExtension']
-        self.app.jinja_options.setdefault('extensions', []).extend(exts)
-        
+                  
     def __register_middlewares(self) -> None:
         if self.app.config.get('VERBOSE',False):
             print(f"Registering middlewares")
@@ -281,7 +274,7 @@ class AppFactory(object):
     ):
         blueprint_settings_path = ((self.app.config.get('BLUEPRINTS',None) and 'BLUEPRINTS') or (self.app.config.get('INSTALLED_BLUEPRINTS',None) and 'INSTALLED_BLUEPRINTS') or False)
         if not blueprint_settings_path:
-            raise NoInstalledBlueprintsSettingException(f"You must have a setting for either  INSTALLED_BLUEPRINTS or BLUEPRINTS")
+            raise NoInstalledBlueprintsSettingException("You must have a setting for either  INSTALLED_BLUEPRINTS or BLUEPRINTS")
         
         for blueprint_path in self.app.config.get(blueprint_settings_path, []):
             module_name, object_name = blueprint_path.rsplit('.',1)

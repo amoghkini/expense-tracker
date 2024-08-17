@@ -11,12 +11,7 @@ class AppLifeCycle:
         app: Flask
     ) -> None:
         self.app = app
-        
-    def register_before_first_request(self):
-        @self.app.before_first_request
-        def before_first_request():
-            db.create_all()   # To create database
-        
+                
     def register_before_request(self):
         @self.app.before_request
         def before_request():
