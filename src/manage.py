@@ -5,6 +5,7 @@ from main.main import AppFactory
 app = AppFactory().get_app(__name__)
 
 
+
 # def migrate_command():
 #     # cli.run_command('db', ['migrate'])
 #     cli.main(args=['db', 'migrate'])
